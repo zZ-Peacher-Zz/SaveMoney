@@ -79,6 +79,17 @@ pip install -r requirements.txt
 
 ## 3. Chạy app
 
+### Render Python runtime
+
+The repository pins Python 3.12 in `.python-version` to match the current
+dependencies. Render's `PYTHON_VERSION` environment variable overrides this file;
+remove an existing 3.14 override before deploying. After changing the runtime,
+use **Manual Deploy → Clear build cache & deploy**.
+
+Build command: `pip install -r requirements.txt`
+
+Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+
 ```bash
 uvicorn main:app --reload
 ```
@@ -179,6 +190,41 @@ Có thể nâng cấp project thành app dùng nhiều người bằng cách th�
 
 
 ## User accounts
+
+### Password recovery
+
+New accounts created in the UI provide an email address. They must open the
+verification email and confirm it before the address can recover their account.
+Existing users can add or change their recovery email in **Email khôi phục tài khoản**
+after logging in and entering their current password. The old verified address
+continues to work until the replacement is verified. An email can belong to only
+one verified account. Legacy API registrations without email still work.
+
+**Quên mật khẩu?** sends a reset link only to verified addresses. The response does
+not disclose whether an email belongs to an account. Links expire after 30 minutes,
+are stored only as hashes, and are consumed once. Resetting a password invalidates
+all existing login sessions and recovery links. Requests have per-address and
+per-client limits. No reset tokens are returned in API responses or printed to logs.
+
+Copy `.env.example` to `.env` locally (never commit secrets), then run
+`uvicorn main:app --reload --env-file .env`. On Render, set variables in Environment:
+
+- `APP_BASE_URL`: public app URL, e.g. `https://your-app.onrender.com`.
+- `COOKIE_SECURE=1` for HTTPS. For local HTTP development, use `COOKIE_SECURE=0`
+  and `APP_BASE_URL=http://127.0.0.1:8000`.
+- `EMAIL_FROM`: sender address authorized by your email provider.
+- `RESEND_API_KEY`: enables HTTPS delivery through Resend; use a verified domain
+  and sender to deliver to other users, not only your provider's test recipients.
+
+Render Free blocks common SMTP ports, so use the HTTPS option there. Alternatively,
+on a host that permits SMTP, set `SMTP_HOST`, `SMTP_PORT` (587 STARTTLS or 465 TLS),
+`SMTP_USER`, and `SMTP_PASSWORD` instead of `RESEND_API_KEY`.
+Provider accounts, sender verification, and credentials must be configured before
+real emails can be sent. Without delivery configuration the app reports an error;
+it does not expose recovery links as a fallback.
+
+Routes: `GET/PUT /api/auth/recovery-email`, `POST /api/auth/verify-email`,
+`POST /api/auth/forgot-password`, and `POST /api/auth/reset-password`.
 
 Each account can upload or remove its avatar using the photo next to the username
 or **Đổi ảnh đại diện**. Supported formats are PNG, JPEG, and WebP, up to 5 MB

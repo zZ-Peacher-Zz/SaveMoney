@@ -1,0 +1,12 @@
+  <dialog id="recoveryDialog" class="avatar-dialog" aria-labelledby="recoveryTitle">
+    <h2 id="recoveryTitle">Đặt lại mật khẩu</h2>
+    <form id="recoveryLinkForm">
+      <div id="resetPasswordFields">
+        <label><span>Mật khẩu mới</span><input id="newPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password"></label>
+        <label><span>Nhập lại mật khẩu mới</span><input id="confirmPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password"></label>
+      </div>
+      <p id="recoveryLinkStatus" role="status"></p>
+      <button id="submitRecoveryLink" class="button primary" type="submit">Lưu mật khẩu mới</button>
+      <button id="closeRecoveryDialog" class="button ghost" type="button">Đóng</button>
+    </form>
+  </dialog>

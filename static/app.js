@@ -313,27 +313,18 @@ document.getElementById("clearBtn").addEventListener("click", async () => {
   }
 });
 
-const authPanel = document.getElementById("authPanel");
 const dashboard = document.getElementById("dashboard");
 let accountVersion = 0;
+let invitationTimer = null;
+let invitationPolling = false;
+let invitationBusy = false;
+let invitationRevision = 0;
+let invitationSnapshot = "";
 
 function showAuth() {
   accountVersion++;
-  const avatarDialog = document.getElementById("avatarDialog");
-  if (avatarDialog.open) avatarDialog.close();
-  renderAvatar(null);
-  loadVersion++;
-  familyGroups = [];
-  ledgerPicker.innerHTML = '<option value="">Cá nhân</option>';
-  document.getElementById("memberList").innerHTML = "";
-  document.getElementById("invitations").innerHTML = "";
-  document.getElementById("groupDetails").classList.add("hidden");
-  authPanel.classList.remove("hidden");
-  dashboard.classList.add("hidden");
-  expenseBody.innerHTML = "";
-  breakdown.innerHTML = "";
-  incomeInput.value = "";
-  resetForm();
+  clearInterval(invitationTimer);
+  location.replace("/login" + location.hash);
 }
 
 async function showDashboard(user) {
@@ -344,9 +335,10 @@ async function showDashboard(user) {
   resetForm();
   await refreshGroups();
   await loadAll();
-  authPanel.classList.add("hidden");
   dashboard.classList.remove("hidden");
-  document.getElementById("passwordInput").value = "";
+  clearInterval(invitationTimer);
+  invitationTimer = setInterval(pollInvitations, 3000);
+  document.dispatchEvent(new Event("account-ready"));
 }
 
 function renderAvatar(url) {
@@ -392,27 +384,6 @@ document.getElementById("removeAvatarBtn").addEventListener("click", async event
   finally { button.disabled = false; }
 });
 
-document.getElementById("authForm").addEventListener("submit", async event => {
-  event.preventDefault();
-  const errorLabel = document.getElementById("authError");
-  const buttons = [document.getElementById("loginBtn"), document.getElementById("registerBtn")];
-  errorLabel.textContent = "";
-  buttons.forEach(button => button.disabled = true);
-  try {
-    const action = event.submitter?.id === "registerBtn" ? "register" : "login";
-    const user = await api(`/api/auth/${action}`, {
-      method: "POST",
-      body: JSON.stringify({username: document.getElementById("usernameInput").value,
-                            password: document.getElementById("passwordInput").value})
-    });
-    await showDashboard(user);
-  } catch (error) {
-    errorLabel.textContent = error.message;
-  } finally {
-    buttons.forEach(button => button.disabled = false);
-  }
-});
-
 document.getElementById("logoutBtn").addEventListener("click", async () => {
   try {
     await api("/api/auth/logout", {method: "POST"});
@@ -429,12 +400,42 @@ async function refreshGroups() {
   ledgerPicker.innerHTML = '<option value="">Cá nhân</option>' + groups.map(group =>
     `<option value="${group.id}">${html(group.name)}</option>`).join("");
   ledgerPicker.value = groups.some(group => String(group.id) === previous) ? previous : "";
+  renderInvitations(invitations);
+  await renderGroupDetails();
+}
+
+function renderInvitations(invitations, notify = false) {
+  invitationRevision++;
+  const snapshot = JSON.stringify(invitations);
+  if (snapshot === invitationSnapshot) return;
+  const previous = invitationSnapshot ? JSON.parse(invitationSnapshot) : [];
+  const hasNew = invitations.some(item => !previous.some(old => old.group_id === item.group_id));
+  invitationSnapshot = snapshot;
   document.getElementById("invitations").innerHTML = invitations.map(invitation => `
     <div class="invitation-row"><span>Lời mời tham gia <strong>${html(invitation.name)}</strong></span>
     <div class="toolbar"><button class="button secondary compact" data-accept="${invitation.group_id}">Chấp nhận</button>
     <button class="button ghost compact" data-decline="${invitation.group_id}">Từ chối</button></div></div>`).join("");
-  await renderGroupDetails();
+  if (notify && hasNew) showToast("Bạn có lời mời tham gia gia đình mới");
 }
+
+async function pollInvitations() {
+  if (!invitationTimer || document.hidden || dashboard.classList.contains("hidden") || invitationPolling || invitationBusy) return;
+  invitationPolling = true;
+  const version = accountVersion;
+  const revision = invitationRevision;
+  try {
+    const invitations = await api("/api/invitations", {cache: "no-store"});
+    if (version !== accountVersion || revision !== invitationRevision || invitationBusy) return;
+    renderInvitations(invitations, true);
+  } catch (_) {
+    // Retry on the next tick if the connection drops. api() handles expired sessions.
+  } finally {
+    invitationPolling = false;
+  }
+}
+
+window.addEventListener("focus", pollInvitations);
+document.addEventListener("visibilitychange", pollInvitations);
 
 async function renderGroupDetails() {
   const group = selectedGroup();
@@ -452,8 +453,14 @@ async function renderGroupDetails() {
   const members = await api(`/api/groups/${group.id}/members`);
   if (version !== accountVersion || selectedGroup()?.id !== group.id) return;
   document.getElementById("memberList").innerHTML = members.map(member => `
-    <div class="member-row"><span>${html(member.username)}${member.is_owner ? " · Chủ nhóm" : ""}</span>
+    <div class="member-row"><div class="member-identity">
+      <span class="member-avatar"><span>${html(member.username.slice(0, 1).toUpperCase())}</span>${member.avatar_url ? `<img src="${html(member.avatar_url)}?v=${Date.now()}" alt="" loading="lazy">` : ""}</span>
+      <div class="member-info"><strong>${html(member.username)}</strong><small>${member.is_owner ? "Chủ nhóm" : "Thành viên"}</small></div>
+    </div>
     ${group.is_owner && !member.is_owner ? `<button class="button danger compact" data-remove="${member.id}">Xóa khỏi nhóm</button>` : ""}</div>`).join("");
+  document.querySelectorAll(".member-avatar img").forEach(image => {
+    image.addEventListener("error", () => image.remove(), {once: true});
+  });
 }
 
 ledgerPicker.addEventListener("change", async () => {
@@ -500,7 +507,9 @@ document.getElementById("invitations").addEventListener("click", async event => 
   const button = event.target.closest("button");
   if (!button) return;
   const groupId = button.dataset.accept || button.dataset.decline;
-  if (!groupId) return;
+  if (!groupId || invitationBusy) return;
+  invitationBusy = true;
+  invitationRevision++;
   button.disabled = true;
   try {
     if (button.dataset.accept) await api(`/api/invitations/${groupId}/accept`, {method: "POST"});
@@ -513,6 +522,7 @@ document.getElementById("invitations").addEventListener("click", async event => 
     }
     await loadAll();
   } catch (error) { showToast(error.message); button.disabled = false; }
+  finally { invitationBusy = false; invitationRevision++; }
 });
 
 document.getElementById("memberList").addEventListener("click", async event => {
@@ -532,7 +542,10 @@ document.getElementById("refreshGroupsBtn").addEventListener("click", async () =
 });
 
 resetForm();
+if (!(legacyRecovery.get("token") && ["reset", "verify"].includes(legacyRecovery.get("action")))) {
 api("/api/auth/me").then(showDashboard).catch(error => {
   showAuth();
   if (error.message !== "Please log in") showToast(error.message);
 });
+
+}

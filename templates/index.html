@@ -4,20 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chi tiêu tháng</title>
+  <script src="/static/recovery-redirect.js"></script>
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <section id="authPanel" class="panel auth-panel">
-    <h1>Đăng nhập</h1>
-    <p>Đăng nhập hoặc tạo tài khoản để quản lý thu nhập và chi tiêu riêng.</p>
-    <form id="authForm">
-      <label><span>Tên đăng nhập</span><input id="usernameInput" autocomplete="username" minlength="3" maxlength="50" pattern="[a-zA-Z0-9_.\-]+" required></label>
-      <label><span>Mật khẩu</span><input id="passwordInput" type="password" autocomplete="current-password" minlength="8" maxlength="128" required></label>
-      <p id="authError" role="alert"></p>
-      <button id="loginBtn" class="button primary" type="submit">Đăng nhập</button>
-      <button id="registerBtn" class="button secondary" type="submit">Tạo tài khoản</button>
-    </form>
-  </section>
   <div id="dashboard" class="shell hidden">
     <header class="header">
       <div>
@@ -47,6 +37,18 @@
       </div>
     </header>
 
+    <section class="panel family-panel">
+      <details>
+        <summary>Email khôi phục tài khoản</summary>
+        <p id="recoveryEmailStatus">Chưa có email khôi phục đã xác minh.</p>
+        <form id="recoveryEmailForm">
+          <label><span>Email khôi phục mới</span><input id="recoveryEmailInput" type="email" maxlength="254" autocomplete="email" required></label>
+          <label><span>Mật khẩu hiện tại</span><input id="recoveryPasswordInput" type="password" minlength="8" maxlength="128" autocomplete="current-password" required></label>
+          <button class="button secondary" type="submit">Gửi email xác minh</button>
+          <p id="recoveryEmailMessage" role="status"></p>
+        </form>
+      </details>
+    </section>
     <section class="panel family-panel">
       <div class="panel-title split">
         <div><span class="overline">FAMILY</span><h2>Sổ thu chi</h2></div>
@@ -227,5 +229,6 @@
   <div id="toast" class="toast hidden"></div>
   <script src="/static/avatar-crop.js"></script>
   <script src="/static/app.js"></script>
+  <script src="/static/recovery.js"></script>
 </body>
 </html>

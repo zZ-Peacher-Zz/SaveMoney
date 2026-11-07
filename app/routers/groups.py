@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import require_group
 from app.models.group import FamilyGroup, GroupInvitation, GroupMember
-from app.models.user import User
+from app.models.user import User, UserAvatar
 from app.schemas.groups import GroupPayload, InvitePayload
 from app.security import current_user
 
@@ -34,7 +34,23 @@ def members(group_id: int, db: Session = Depends(get_db), user: User = Depends(c
     group = require_group(db, group_id, user)
     users = db.scalars(select(User).join(GroupMember, GroupMember.user_id == User.id)
                        .where(GroupMember.group_id == group_id).order_by(User.username)).all()
-    return [{"id": u.id, "username": u.username, "is_owner": u.id == group.owner_id} for u in users]
+    avatar_ids = set(db.scalars(select(UserAvatar.user_id).join(
+        GroupMember, GroupMember.user_id == UserAvatar.user_id
+    ).where(GroupMember.group_id == group_id)).all())
+    return [{"id": u.id, "username": u.username, "is_owner": u.id == group.owner_id,
+             "avatar_url": f"/api/groups/{group_id}/members/{u.id}/avatar" if u.id in avatar_ids else None}
+            for u in users]
+
+
+@router.get("/api/groups/{group_id}/members/{member_id}/avatar")
+def member_avatar(group_id: int, member_id: int, db: Session = Depends(get_db), user: User = Depends(current_user)):
+    require_group(db, group_id, user)
+    if db.get(GroupMember, (group_id, member_id)) is None:
+        raise HTTPException(404, "Member not found")
+    avatar = db.get(UserAvatar, member_id)
+    if avatar is None:
+        raise HTTPException(404, "Avatar not found")
+    return Response(avatar.image, media_type="image/png", headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})
 
 
 @router.post("/api/groups/{group_id}/invitations", status_code=201)

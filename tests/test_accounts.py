@@ -185,6 +185,26 @@ class AccountTests(unittest.TestCase):
         self.assertEqual(self.alice.get("/api/auth/me").json()["avatar_url"], None)
         self.assertEqual(self.alice.get("/api/auth/avatar").status_code, 404)
 
+    def test_member_avatars_require_shared_membership(self):
+        from io import BytesIO
+        from PIL import Image
+        group, scope = self.family()
+        image = BytesIO()
+        Image.new("RGB", (32, 32), "red").save(image, "PNG")
+        self.bob.put("/api/auth/avatar", content=image.getvalue())
+        members = self.alice.get(f"/api/groups/{group}/members").json()
+        bob = next(m for m in members if m["username"] == "bob")
+        alice = next(m for m in members if m["username"] == "alice")
+        self.assertIsNone(alice["avatar_url"])
+        url = bob["avatar_url"]
+        self.assertEqual(self.alice.get(url).status_code, 200)
+        self.assertEqual(self.alice.get(url).content, self.bob.get("/api/auth/avatar").content)
+        other = self.alice.post("/api/groups", json={"name": "Other"}).json()["id"]
+        self.assertEqual(self.alice.get(f"/api/groups/{other}/members/{bob['id']}/avatar").status_code, 404)
+        self.alice.delete(f"/api/groups/{group}/members/{bob['id']}")
+        self.assertEqual(self.alice.get(url).status_code, 404)
+        self.assertEqual(self.bob.get(f"/api/groups/{group}/members/{alice['id']}/avatar").status_code, 404)
+
 
 if __name__ == "__main__":
     unittest.main()

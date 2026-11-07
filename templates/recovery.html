@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ 'Xác minh email' if verify else 'Đặt lại mật khẩu' }} · SaveMoney</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <main id="recoveryDialog" class="panel auth-panel">
+    <div class="eyebrow">SAVEMONEY</div>
+    <h1 id="recoveryTitle">{{ 'Xác minh email khôi phục' if verify else 'Đặt lại mật khẩu' }}</h1>
+    <p>{{ 'Bấm xác minh để dùng email này khôi phục tài khoản.' if verify else 'Nhập mật khẩu mới cho tài khoản của bạn.' }}</p>
+    <form id="recoveryLinkForm">
+      <div id="resetPasswordFields" class="{{ 'hidden' if verify else '' }}">
+        <label><span>Mật khẩu mới</span><input id="newPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password"></label>
+        <label><span>Nhập lại mật khẩu mới</span><input id="confirmPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password"></label>
+      </div>
+      <p id="recoveryLinkStatus" role="status" aria-live="polite"></p>
+      <button id="submitRecoveryLink" class="button primary" type="submit">{{ 'Xác minh email' if verify else 'Lưu mật khẩu mới' }}</button>
+      <a class="button ghost" href="/login">Về đăng nhập</a>
+      <a href="/forgot-password">Gửi lại link khôi phục</a>
+    </form>
+  </main>
+  <script src="/static/auth-api.js"></script>
+  <script src="/static/recovery-links.js"></script>
+</body>
+</html>

@@ -426,6 +426,10 @@ th {
 
 .auth-panel { max-width: 440px; margin: 10vh auto; }
 .auth-panel p { color: var(--muted); }
+.auth-links { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+.auth-links a { color: var(--primary); font-size: 13px; text-decoration: none; }
+.auth-links a:hover { text-decoration: underline; }
+.auth-panel { width: calc(100% - 24px); }
 #authError { color: var(--danger); margin: 0; }
 .header-actions { display: grid; gap: 10px; }
 .account-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; min-width: 0; }
@@ -447,6 +451,10 @@ th {
 #avatarCropCanvas:focus-visible { outline: 3px solid var(--primary); }
 .crop-zoom { display: grid; gap: 8px; margin-bottom: 20px; font-size: 13px; }
 .crop-zoom input { padding: 0; accent-color: var(--primary); }
+#forgotPasswordBtn { margin-top: 12px; }
+#forgotPasswordForm { margin-top: 14px; }
+#resetPasswordFields { display: grid; gap: 14px; }
+#recoveryEmailForm { max-width: 480px; }
 .button:disabled { opacity: .6; cursor: wait; }
 
 .family-panel { margin-bottom: 18px; }
@@ -456,6 +464,13 @@ th {
 .family-form label { flex: 1; min-width: 180px; }
 .member-row, .invitation-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 .record-author { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; }
+.member-row { padding: 14px; margin: 8px 0; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+.member-identity { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+.member-avatar { position: relative; display: grid; place-items: center; width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; overflow: hidden; background: var(--primary-soft); color: var(--primary); font-size: 20px; font-weight: 800; border: 2px solid #dce5ff; }
+.member-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.member-info { min-width: 0; }
+.member-info strong { display: block; font-size: 15px; font-weight: 800; overflow-wrap: anywhere; }
+.member-info small { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
 .day-heading th { background: var(--primary-soft); color: var(--text); border-top: 1px solid var(--line); }
 .day-summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 13px; }
 .day-summary small { color: var(--muted); font-weight: 500; }
