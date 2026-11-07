@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chi tiêu tháng</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <section id="authPanel" class="panel auth-panel">
+    <h1>Đăng nhập</h1>
+    <p>Đăng nhập hoặc tạo tài khoản để quản lý thu nhập và chi tiêu riêng.</p>
+    <form id="authForm">
+      <label><span>Tên đăng nhập</span><input id="usernameInput" autocomplete="username" minlength="3" maxlength="50" pattern="[a-zA-Z0-9_.\-]+" required></label>
+      <label><span>Mật khẩu</span><input id="passwordInput" type="password" autocomplete="current-password" minlength="8" maxlength="128" required></label>
+      <p id="authError" role="alert"></p>
+      <button id="loginBtn" class="button primary" type="submit">Đăng nhập</button>
+      <button id="registerBtn" class="button secondary" type="submit">Tạo tài khoản</button>
+    </form>
+  </section>
+  <div id="dashboard" class="shell hidden">
+    <header class="header">
+      <div>
+        <div class="eyebrow">PERSONAL FINANCE</div>
+        <h1>Chi tiêu tháng</h1>
+        <p>Theo dõi dòng tiền rõ ràng, gọn gàng và có dữ liệu lưu bằng Python backend.</p>
+      </div>
+      <div class="header-actions">
+        <div class="account-actions">
+          <button id="avatarBtn" type="button" class="avatar-button" aria-label="Thay đổi ảnh đại diện" title="Thay đổi ảnh đại diện">
+            <img id="avatarImage" class="hidden" alt="Ảnh đại diện">
+            <span id="avatarInitial" aria-hidden="true"></span>
+          </button>
+          <strong id="currentUser"></strong>
+          <button id="logoutBtn" class="button logout-button" type="button">Đăng xuất</button>
+        </div>
+        <div class="avatar-controls">
+          <label for="avatarInput" class="avatar-label">Đổi ảnh đại diện</label>
+          <input id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden">
+          <button id="removeAvatarBtn" type="button" class="icon-button hidden">Xóa ảnh</button>
+        </div>
+        <small class="avatar-help">PNG, JPG, WebP · tối đa 5 MB</small>
+        <label class="month-label">
+          <span>Tháng</span>
+          <input id="monthPicker" type="month">
+        </label>
+      </div>
+    </header>
+
+    <section class="panel family-panel">
+      <div class="panel-title split">
+        <div><span class="overline">FAMILY</span><h2>Sổ thu chi</h2></div>
+        <button id="refreshGroupsBtn" type="button" class="button ghost compact">Làm mới nhóm và lời mời</button>
+      </div>
+      <label class="month-label"><span>Đang xem và ghi thu chi vào</span><select id="ledgerPicker"><option value="">Cá nhân</option></select></label>
+      <p id="ledgerHint">Chỉ bạn xem được sổ cá nhân.</p>
+      <details>
+        <summary>Quản lý gia đình</summary>
+        <form id="createGroupForm" class="family-form">
+          <label><span>Tên gia đình mới</span><input id="groupNameInput" maxlength="80" required placeholder="Ví dụ: Gia đình mình"></label>
+          <button class="button secondary" type="submit">Tạo nhóm</button>
+        </form>
+        <div id="groupDetails" class="hidden">
+          <h3>Thành viên</h3><div id="memberList"></div>
+          <form id="inviteForm" class="family-form hidden">
+            <label><span>Mời bằng tên đăng nhập đã có tài khoản</span><input id="inviteUsernameInput" minlength="3" maxlength="50" required autocomplete="off"></label>
+            <button class="button secondary" type="submit">Gửi lời mời</button>
+          </form>
+        </div>
+      </details>
+      <div id="invitations" aria-live="polite"></div>
+    </section>
+
+    <section class="metrics">
+      <article class="metric-card">
+        <span>Thu nhập</span>
+        <strong id="incomeValue">0 ₫</strong>
+        <small>Ngân sách tháng</small>
+      </article>
+      <article class="metric-card">
+        <span>Tổng chi</span>
+        <strong id="expenseValue">0 ₫</strong>
+        <small id="expenseCount">0 khoản chi</small>
+      </article>
+      <article class="metric-card">
+        <span>Còn lại</span>
+        <strong id="remainingValue">0 ₫</strong>
+        <small>Thu nhập − tổng chi</small>
+      </article>
+      <article class="metric-card">
+        <span>Tỷ lệ tiết kiệm</span>
+        <strong id="savingRate">0%</strong>
+        <small>Phần còn lại / thu nhập</small>
+      </article>
+    </section>
+
+    <section id="budgetAlert" class="alert hidden">
+      Chi tiêu tháng này đã vượt thu nhập.
+    </section>
+
+    <main class="layout">
+      <aside class="left-column">
+        <section class="panel">
+          <div class="panel-title">
+            <div>
+              <span class="overline">BUDGET</span>
+              <h2 id="incomeTitle">Thu nhập tháng</h2>
+            </div>
+          </div>
+
+          <p id="incomeHint" class="hidden">Nhập phần thu nhập bạn góp vào gia đình trong tháng. Tổng thu nhập ở trên gồm tất cả thành viên.</p>
+          <div class="input-row">
+            <input id="incomeInput" type="number" min="0" step="1000" placeholder="Ví dụ 20.000.000">
+            <button id="saveIncomeBtn" class="button secondary">Lưu</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">
+            <div>
+              <span class="overline">TRANSACTION</span>
+              <h2 id="formTitle">Thêm khoản chi</h2>
+            </div>
+          </div>
+
+          <form id="expenseForm">
+            <label>
+              <span>Ngày</span>
+              <input id="dateInput" type="date" required>
+            </label>
+
+            <label>
+              <span>Phân loại</span>
+              <select id="categoryInput" required>
+                <option>Nhà ở</option>
+                <option selected>Ăn uống</option>
+                <option>Xăng xe</option>
+                <option>Quần áo</option>
+                <option>Gia đình</option>
+                <option>Du lịch</option>
+                <option>Học tập</option>
+                <option>Giải trí</option>
+                <option>Khác</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Số tiền</span>
+              <input id="amountInput" type="number" min="1" step="1" placeholder="Ví dụ 120.000" required>
+            </label>
+
+            <label>
+              <span>Ghi chú</span>
+              <textarea id="noteInput" maxlength="255" placeholder="Ví dụ: Ăn trưa, tiền điện, mua sách..."></textarea>
+            </label>
+
+            <div class="form-actions">
+              <button id="submitBtn" class="button primary" type="submit">Thêm khoản chi</button>
+              <button id="cancelEditBtn" class="button ghost hidden" type="button">Huỷ sửa</button>
+            </div>
+          </form>
+        </section>
+      </aside>
+
+      <section class="right-column">
+        <section class="panel">
+          <div class="panel-title split">
+            <div>
+              <span class="overline">INSIGHT</span>
+              <h2>Chi tiêu theo danh mục</h2>
+            </div>
+            <small>Tỷ trọng theo tổng chi</small>
+          </div>
+
+          <div id="breakdown" class="breakdown"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title split">
+            <div>
+              <span class="overline">HISTORY</span>
+              <h2>Lịch sử chi tiêu</h2>
+              <small id="tableHint">0 giao dịch</small>
+            </div>
+
+            <div class="toolbar">
+              <a id="exportBtn" class="button secondary compact" href="#">Xuất CSV</a>
+              <button id="clearBtn" class="button danger compact">Xoá tháng</button>
+            </div>
+          </div>
+
+          <div id="emptyState" class="empty-state">
+            <div class="empty-icon">₫</div>
+            <strong>Chưa có khoản chi</strong>
+            <span>Thêm giao dịch đầu tiên để bắt đầu theo dõi tháng này.</span>
+          </div>
+
+          <div id="tableWrap" class="table-wrap hidden">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ngày</th>
+                  <th>Phân loại</th>
+                  <th>Ghi chú</th>
+                  <th class="align-right">Số tiền</th>
+                  <th class="align-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="expenseBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="avatarDialog" class="avatar-dialog" aria-labelledby="avatarDialogTitle" aria-describedby="avatarDialogHint">
+    <h2 id="avatarDialogTitle">Chỉnh ảnh đại diện</h2>
+    <p id="avatarDialogHint">Kéo ảnh trong khung tròn để căn chỉnh. Bạn cũng có thể dùng các phím mũi tên.</p>
+    <canvas id="avatarCropCanvas" width="512" height="512" tabindex="0" aria-label="Vùng cắt ảnh đại diện, kéo ảnh hoặc dùng phím mũi tên"></canvas>
+    <label class="crop-zoom"><span>Phóng to</span><input id="avatarZoom" type="range" min="1" max="4" step="0.01" value="1"></label>
+    <div class="form-actions">
+      <button id="cancelAvatarCrop" type="button" class="button ghost">Hủy</button>
+      <button id="saveAvatarCrop" type="button" class="button primary">Lưu ảnh đại diện</button>
+    </div>
+  </dialog>
+  <div id="toast" class="toast hidden"></div>
+  <script src="/static/avatar-crop.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
