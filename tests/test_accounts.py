@@ -205,6 +205,21 @@ class AccountTests(unittest.TestCase):
         self.assertEqual(self.alice.get(url).status_code, 404)
         self.assertEqual(self.bob.get(f"/api/groups/{group}/members/{alice['id']}/avatar").status_code, 404)
 
+    def test_home_redirects_without_valid_session(self):
+        response = self.alice.get("/", follow_redirects=False)
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(response.headers["location"], "/login")
+        self.assertEqual(response.headers["cache-control"], "no-store")
+        self.assertEqual(self.alice.get("/").status_code, 200)
+        self.register(self.alice, "alice")
+        response = self.alice.get("/", follow_redirects=False)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('id="dashboard"', response.text)
+        self.alice.post("/api/auth/logout")
+        self.assertEqual(self.alice.get("/", follow_redirects=False).status_code, 303)
+        for path in ("/login", "/register", "/forgot-password", "/reset-password", "/verify-email"):
+            self.assertEqual(self.alice.get(path, follow_redirects=False).status_code, 200)
+
 
 if __name__ == "__main__":
     unittest.main()
