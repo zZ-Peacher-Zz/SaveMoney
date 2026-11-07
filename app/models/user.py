@@ -1,34 +1,24 @@
-from dataclasses import dataclass
-from datetime import date
-from typing import ClassVar, Optional
+from sqlalchemy import Integer, String, LargeBinary
+from sqlalchemy.orm import Mapped, mapped_column
 
-from app.models.document import Document
-
-
-@dataclass(kw_only=True)
-class User(Document):
-    collection: ClassVar[str] = 'users'
-    key_fields: ClassVar[tuple] = ('id',)
-    unique_fields: ClassVar[tuple] = (('username',),)
-    id: int = None
-    username: str
-    password_hash: str
+from app.database import Base
 
 
-@dataclass(kw_only=True)
-class LoginSession(Document):
-    collection: ClassVar[str] = 'login_sessions'
-    key_fields: ClassVar[tuple] = ('token_hash',)
-    unique_fields: ClassVar[tuple] = ()
-    token_hash: str
-    user_id: int
-    expires_at: int
+class User(Base):
+    __tablename__ = "users"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    username: Mapped[str] = mapped_column(String(50), unique=True)
+    password_hash: Mapped[str] = mapped_column(String(255))
 
 
-@dataclass(kw_only=True)
-class UserAvatar(Document):
-    collection: ClassVar[str] = 'user_avatars'
-    key_fields: ClassVar[tuple] = ('user_id',)
-    unique_fields: ClassVar[tuple] = ()
-    user_id: int
-    image: bytes
+class LoginSession(Base):
+    __tablename__ = "login_sessions"
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, index=True)
+    expires_at: Mapped[int] = mapped_column(Integer)
+
+
+class UserAvatar(Base):
+    __tablename__ = "user_avatars"
+    user_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    image: Mapped[bytes] = mapped_column(LargeBinary)

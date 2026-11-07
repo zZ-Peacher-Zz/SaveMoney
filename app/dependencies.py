@@ -2,7 +2,7 @@
 from typing import Optional
 
 from fastapi import Depends, HTTPException
-from app.database import MongoSession as Session
+from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.finance import Expense, MonthlyIncome
@@ -31,7 +31,7 @@ class Ledger:
             self.values["group_id"] = group.id
 
     def filter(self, model):
-        return {"group_id": self.group.id} if self.group else {"user_id": self.user.id}
+        return model.group_id == self.group.id if self.group else model.user_id == self.user.id
 
     def can_edit(self, item):
         return item.user_id == self.user.id or (self.group and self.group.owner_id == self.user.id)

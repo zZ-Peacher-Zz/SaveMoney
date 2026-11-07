@@ -4,7 +4,8 @@ from io import StringIO
 from fastapi.responses import StreamingResponse
 
 from fastapi import APIRouter, Depends, HTTPException
-from app.database import MongoSession as Session
+from sqlalchemy import delete, select
+from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import Ledger, current_ledger
@@ -20,12 +21,17 @@ def get_summary(month: str, db: Session = Depends(get_db), ledger: Ledger = Depe
     MonthlyIncome, Expense = ledger.income, ledger.expense
     start, end = month_bounds(month)
 
-    income_rows = db.find(MonthlyIncome, {"month": month, **ledger.filter(MonthlyIncome)})
+    income_rows = db.scalars(
+        select(MonthlyIncome).where(MonthlyIncome.month == month, ledger.filter(MonthlyIncome))
+    ).all()
     income = sum(row.amount for row in income_rows)
     my_income = sum(row.amount for row in income_rows if row.user_id == ledger.user.id)
 
-    expenses = db.find(Expense, {**ledger.filter(Expense), "expense_date": {"$gte": start.isoformat(), "$lt": end.isoformat()}},
-                       sort=[("expense_date", -1), ("id", -1)])
+    expenses = db.scalars(
+        select(Expense)
+        .where(ledger.filter(Expense), Expense.expense_date >= start, Expense.expense_date < end)
+        .order_by(Expense.expense_date.desc(), Expense.id.desc())
+    ).all()
 
     total_expense = sum(x.amount for x in expenses)
     remaining = income - total_expense
@@ -61,7 +67,9 @@ def set_income(month: str, payload: IncomePayload, db: Session = Depends(get_db)
     MonthlyIncome, Expense = ledger.income, ledger.expense
     validate_month(month)
 
-    row = db.one(MonthlyIncome, {**ledger.filter(MonthlyIncome), "month": month, "user_id": ledger.user.id})
+    row = db.scalar(
+        select(MonthlyIncome).where(MonthlyIncome.month == month, ledger.filter(MonthlyIncome), MonthlyIncome.user_id == ledger.user.id)
+    )
     if row:
         row.amount = payload.amount
     else:
@@ -84,8 +92,16 @@ def clear_month(month: str, db: Session = Depends(get_db), ledger: Ledger = Depe
     if ledger.group and ledger.group.owner_id != ledger.user.id:
         raise HTTPException(403, "Only the group owner can clear the month")
 
-    db.delete_many(Expense, {**ledger.filter(Expense), "expense_date": {"$gte": start.isoformat(), "$lt": end.isoformat()}})
-    db.delete_many(MonthlyIncome, {"month": month, **ledger.filter(MonthlyIncome)})
+    db.execute(
+        delete(Expense).where(
+            ledger.filter(Expense),
+            Expense.expense_date >= start,
+            Expense.expense_date < end,
+        )
+    )
+    db.execute(
+        delete(MonthlyIncome).where(MonthlyIncome.month == month, ledger.filter(MonthlyIncome))
+    )
     db.commit()
 
 
@@ -94,8 +110,11 @@ def export_csv(month: str, db: Session = Depends(get_db), ledger: Ledger = Depen
     MonthlyIncome, Expense = ledger.income, ledger.expense
     start, end = month_bounds(month)
 
-    items = db.find(Expense, {**ledger.filter(Expense), "expense_date": {"$gte": start.isoformat(), "$lt": end.isoformat()}},
-                    sort=[("expense_date", 1), ("id", 1)])
+    items = db.scalars(
+        select(Expense)
+        .where(ledger.filter(Expense), Expense.expense_date >= start, Expense.expense_date < end)
+        .order_by(Expense.expense_date.asc(), Expense.id.asc())
+    ).all()
 
     output = StringIO()
     writer = csv.writer(output)

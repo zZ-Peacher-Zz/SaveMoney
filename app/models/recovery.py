@@ -1,36 +1,26 @@
-from dataclasses import dataclass
-from datetime import date
-from typing import ClassVar, Optional
+from sqlalchemy import Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
 
-from app.models.document import Document
-
-
-@dataclass(kw_only=True)
-class RecoveryEmail(Document):
-    collection: ClassVar[str] = 'recovery_emails'
-    key_fields: ClassVar[tuple] = ('user_id',)
-    unique_fields: ClassVar[tuple] = (('email',),)
-    user_id: int
-    email: str
+from app.database import Base
 
 
-@dataclass(kw_only=True)
-class RecoveryToken(Document):
-    collection: ClassVar[str] = 'recovery_tokens'
-    key_fields: ClassVar[tuple] = ('token_hash',)
-    unique_fields: ClassVar[tuple] = ()
-    token_hash: str
-    user_id: int
-    email: str
-    purpose: str
-    expires_at: int
+class RecoveryEmail(Base):
+    __tablename__ = "recovery_emails"
+    user_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    email: Mapped[str] = mapped_column(String(254), unique=True)
 
 
-@dataclass(kw_only=True)
-class RecoveryLimit(Document):
-    collection: ClassVar[str] = 'recovery_limits'
-    key_fields: ClassVar[tuple] = ('key',)
-    unique_fields: ClassVar[tuple] = ()
-    key: str
-    started_at: int
-    count: int
+class RecoveryToken(Base):
+    __tablename__ = "recovery_tokens"
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, index=True)
+    email: Mapped[str] = mapped_column(String(254))
+    purpose: Mapped[str] = mapped_column(String(20))
+    expires_at: Mapped[int] = mapped_column(Integer)
+
+
+class RecoveryLimit(Base):
+    __tablename__ = "recovery_limits"
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    started_at: Mapped[int] = mapped_column(Integer)
+    count: Mapped[int] = mapped_column(Integer)

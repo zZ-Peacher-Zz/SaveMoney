@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
-from app.database import MongoSession as Session
+from sqlalchemy import delete, select
+from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import require_group
@@ -13,8 +14,8 @@ router = APIRouter()
 
 @router.get("/api/groups")
 def list_groups(db: Session = Depends(get_db), user: User = Depends(current_user)):
-    memberships = db.find(GroupMember, {"user_id": user.id})
-    groups = db.find(FamilyGroup, {"id": {"$in": [m.group_id for m in memberships]}}, sort=[("id", 1)])
+    groups = db.scalars(select(FamilyGroup).join(GroupMember, GroupMember.group_id == FamilyGroup.id)
+                        .where(GroupMember.user_id == user.id).order_by(FamilyGroup.id)).all()
     return [{"id": g.id, "name": g.name, "is_owner": g.owner_id == user.id} for g in groups]
 
 
@@ -31,11 +32,11 @@ def create_group(payload: GroupPayload, db: Session = Depends(get_db), user: Use
 @router.get("/api/groups/{group_id}/members")
 def members(group_id: int, db: Session = Depends(get_db), user: User = Depends(current_user)):
     group = require_group(db, group_id, user)
-    memberships = db.find(GroupMember, {"group_id": group_id})
-    user_ids = [m.user_id for m in memberships]
-    users = db.find(User, {"id": {"$in": user_ids}}, sort=[("username", 1)])
-    # Query IDs only, avoiding loading every member's image for the list.
-    avatar_ids = set(db.values(UserAvatar, "user_id", {"user_id": {"$in": user_ids}}))
+    users = db.scalars(select(User).join(GroupMember, GroupMember.user_id == User.id)
+                       .where(GroupMember.group_id == group_id).order_by(User.username)).all()
+    avatar_ids = set(db.scalars(select(UserAvatar.user_id).join(
+        GroupMember, GroupMember.user_id == UserAvatar.user_id
+    ).where(GroupMember.group_id == group_id)).all())
     return [{"id": u.id, "username": u.username, "is_owner": u.id == group.owner_id,
              "avatar_url": f"/api/groups/{group_id}/members/{u.id}/avatar" if u.id in avatar_ids else None}
             for u in users]
@@ -55,7 +56,7 @@ def member_avatar(group_id: int, member_id: int, db: Session = Depends(get_db), 
 @router.post("/api/groups/{group_id}/invitations", status_code=201)
 def invite(group_id: int, payload: InvitePayload, db: Session = Depends(get_db), user: User = Depends(current_user)):
     require_group(db, group_id, user, owner=True)
-    target = db.one(User, {"username": payload.username.strip().lower()})
+    target = db.scalar(select(User).where(User.username == payload.username.strip().lower()))
     if target is None:
         raise HTTPException(404, "User not found")
     if db.get(GroupMember, (group_id, target.id)) or db.get(GroupInvitation, (group_id, target.id)):
@@ -67,8 +68,8 @@ def invite(group_id: int, payload: InvitePayload, db: Session = Depends(get_db),
 
 @router.get("/api/invitations")
 def invitations(db: Session = Depends(get_db), user: User = Depends(current_user)):
-    invitations = db.find(GroupInvitation, {"user_id": user.id})
-    groups = db.find(FamilyGroup, {"id": {"$in": [i.group_id for i in invitations]}})
+    groups = db.scalars(select(FamilyGroup).join(GroupInvitation, GroupInvitation.group_id == FamilyGroup.id)
+                        .where(GroupInvitation.user_id == user.id)).all()
     return [{"group_id": g.id, "name": g.name} for g in groups]
 
 

@@ -11,7 +11,7 @@ load_dotenv(PROJECT_DIR / ".env")
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app.database import get_client, init_db
+from app.database import engine, init_db
 from app.routers import auth, avatars, expenses, groups, months, pages, recovery
 
 @asynccontextmanager
@@ -20,8 +20,7 @@ async def lifespan(app):
     try:
         yield
     finally:
-        get_client().close()
-        get_client.cache_clear()
+        engine.dispose()
 
 
 app = FastAPI(title="Monthly Expense Tracker", version="1.0.0", lifespan=lifespan)

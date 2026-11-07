@@ -1,29 +1,28 @@
-from dataclasses import dataclass
 from datetime import date
-from typing import ClassVar, Optional
+from typing import Optional
 
-from app.models.document import Document
+from sqlalchemy import Date, Float, Integer, String, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column
 
-
-@dataclass(kw_only=True)
-class MonthlyIncome(Document):
-    collection: ClassVar[str] = 'user_monthly_incomes'
-    key_fields: ClassVar[tuple] = ('id',)
-    unique_fields: ClassVar[tuple] = (('user_id', 'month'),)
-    user_id: int
-    id: int = None
-    month: str
-    amount: float = 0
+from app.database import Base
 
 
-@dataclass(kw_only=True)
-class Expense(Document):
-    collection: ClassVar[str] = 'user_expenses'
-    key_fields: ClassVar[tuple] = ('id',)
-    unique_fields: ClassVar[tuple] = ()
-    user_id: int
-    id: int = None
-    expense_date: date
-    category: str
-    amount: float
-    note: Optional[str] = None
+class MonthlyIncome(Base):
+    __tablename__ = "user_monthly_incomes"
+    __table_args__ = (UniqueConstraint("user_id", "month"),)
+    user_id: Mapped[int] = mapped_column(Integer, index=True)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    month: Mapped[str] = mapped_column(String(7), index=True)
+    amount: Mapped[float] = mapped_column(Float, default=0)
+
+
+class Expense(Base):
+    __tablename__ = "user_expenses"
+    user_id: Mapped[int] = mapped_column(Integer, index=True)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    expense_date: Mapped[date] = mapped_column(Date, index=True)
+    category: Mapped[str] = mapped_column(String(50), index=True)
+    amount: Mapped[float] = mapped_column(Float)
+    note: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)

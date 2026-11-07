@@ -12,6 +12,7 @@ from urllib.request import Request, urlopen
 from urllib.error import URLError
 
 from fastapi import HTTPException
+from sqlalchemy import delete
 
 from app.models.recovery import RecoveryLimit, RecoveryToken
 
@@ -81,7 +82,7 @@ def issue_link(db, user_id, email, purpose):
     if not parsed.netloc or parsed.query or parsed.fragment or parsed.username or (parsed.scheme != "https" and not (parsed.scheme == "http" and parsed.hostname in {"localhost", "127.0.0.1"})):
         raise HTTPException(503, "APP_BASE_URL must be configured for email links")
     token = secrets.token_urlsafe(32)
-    db.delete_many(RecoveryToken, {"user_id": user_id, "purpose": purpose})
+    db.execute(delete(RecoveryToken).where(RecoveryToken.user_id == user_id, RecoveryToken.purpose == purpose))
     db.add(RecoveryToken(token_hash=hashlib.sha256(token.encode()).hexdigest(), user_id=user_id,
                          email=email, purpose=purpose, expires_at=int(time.time()) + 1800))
     # Fragments keep secrets out of HTTP access logs and Referer headers.
@@ -95,7 +96,9 @@ def consume_token(db, token, purpose):
     row = db.get(RecoveryToken, digest)
     if row is None or row.purpose != purpose or row.expires_at <= int(time.time()):
         raise HTTPException(400, "This link is invalid or expired. Please request a new one.")
-    deleted = db.delete_many(RecoveryToken, {"token_hash": digest, "purpose": purpose, "expires_at": {"$gt": int(time.time())}})
-    if deleted != 1:
+    result = db.execute(delete(RecoveryToken).where(RecoveryToken.token_hash == digest,
+                        RecoveryToken.purpose == purpose, RecoveryToken.expires_at > int(time.time())),
+                        execution_options={"synchronize_session": False})
+    if result.rowcount != 1:
         raise HTTPException(400, "This link has already been used")
     return row

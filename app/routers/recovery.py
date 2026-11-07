@@ -1,8 +1,9 @@
 import secrets
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from pymongo.errors import DuplicateKeyError
-from app.database import MongoSession as Session
+from sqlalchemy import delete, select
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.recovery import RecoveryEmail, RecoveryToken
@@ -40,9 +41,9 @@ def verify_email(payload: TokenPayload, db: Session = Depends(get_db)):
     else:
         email.email = token.email
     try:
-        db.delete_many(RecoveryToken, {"user_id": token.user_id})
+        db.execute(delete(RecoveryToken).where(RecoveryToken.user_id == token.user_id))
         db.commit()
-    except DuplicateKeyError:
+    except IntegrityError:
         db.rollback()
         raise HTTPException(400, "This recovery email cannot be used. Please choose another email.")
     return {"message": "Recovery email verified. You can now reset your password by email."}
@@ -57,7 +58,7 @@ def forgot_password(payload: EmailPayload, request: Request, db: Session = Depen
     # Report missing delivery configuration for all addresses consistently.
     if not delivery_configured():
         raise HTTPException(503, "Email delivery is not configured. Please contact the administrator.")
-    row = db.one(RecoveryEmail, {"email": str(payload.email)})
+    row = db.scalar(select(RecoveryEmail).where(RecoveryEmail.email == str(payload.email)))
     if row:
         try:
             issue_link(db, row.user_id, row.email, "reset")
@@ -77,8 +78,8 @@ def reset_password(payload: ResetPassword, response: Response, db: Session = Dep
         raise HTTPException(400, "This link is no longer valid")
     salt = secrets.token_hex(16)
     user.password_hash = salt + ":" + hash_password(payload.password, salt)
-    db.delete_many(LoginSession, {"user_id": user.id})
-    db.delete_many(RecoveryToken, {"user_id": user.id})
+    db.execute(delete(LoginSession).where(LoginSession.user_id == user.id))
+    db.execute(delete(RecoveryToken).where(RecoveryToken.user_id == user.id))
     db.commit()
     response.delete_cookie(COOKIE_NAME)
     return {"message": "Password updated. Please log in with your new password."}
