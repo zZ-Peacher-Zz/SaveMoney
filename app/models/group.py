@@ -1,47 +1,59 @@
+from dataclasses import dataclass
 from datetime import date
-from typing import Optional
+from typing import ClassVar, Optional
 
-from sqlalchemy import Date, Float, Integer, String, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
-
-from app.database import Base
+from app.models.document import Document
 
 
-class FamilyGroup(Base):
-    __tablename__ = "family_groups"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(80))
-    owner_id: Mapped[int] = mapped_column(Integer)
+@dataclass(kw_only=True)
+class FamilyGroup(Document):
+    collection: ClassVar[str] = 'family_groups'
+    key_fields: ClassVar[tuple] = ('id',)
+    unique_fields: ClassVar[tuple] = ()
+    id: int = None
+    name: str
+    owner_id: int
 
 
-class GroupMember(Base):
-    __tablename__ = "group_members"
-    group_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+@dataclass(kw_only=True)
+class GroupMember(Document):
+    collection: ClassVar[str] = 'group_members'
+    key_fields: ClassVar[tuple] = ('group_id', 'user_id')
+    unique_fields: ClassVar[tuple] = ()
+    group_id: int
+    user_id: int
 
 
-class GroupInvitation(Base):
-    __tablename__ = "group_invitations"
-    group_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+@dataclass(kw_only=True)
+class GroupInvitation(Document):
+    collection: ClassVar[str] = 'group_invitations'
+    key_fields: ClassVar[tuple] = ('group_id', 'user_id')
+    unique_fields: ClassVar[tuple] = ()
+    group_id: int
+    user_id: int
 
 
-class GroupIncome(Base):
-    __tablename__ = "group_incomes"
-    __table_args__ = (UniqueConstraint("group_id", "user_id", "month"),)
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    group_id: Mapped[int] = mapped_column(Integer, index=True)
-    user_id: Mapped[int] = mapped_column(Integer)
-    month: Mapped[str] = mapped_column(String(7))
-    amount: Mapped[float] = mapped_column(Float)
+@dataclass(kw_only=True)
+class GroupIncome(Document):
+    collection: ClassVar[str] = 'group_incomes'
+    key_fields: ClassVar[tuple] = ('id',)
+    unique_fields: ClassVar[tuple] = (('group_id', 'user_id', 'month'),)
+    id: int = None
+    group_id: int
+    user_id: int
+    month: str
+    amount: float
 
 
-class GroupExpense(Base):
-    __tablename__ = "group_expenses"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    group_id: Mapped[int] = mapped_column(Integer, index=True)
-    user_id: Mapped[int] = mapped_column(Integer)
-    expense_date: Mapped[date] = mapped_column(Date, index=True)
-    category: Mapped[str] = mapped_column(String(50))
-    amount: Mapped[float] = mapped_column(Float)
-    note: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+@dataclass(kw_only=True)
+class GroupExpense(Document):
+    collection: ClassVar[str] = 'group_expenses'
+    key_fields: ClassVar[tuple] = ('id',)
+    unique_fields: ClassVar[tuple] = ()
+    id: int = None
+    group_id: int
+    user_id: int
+    expense_date: date
+    category: str
+    amount: float
+    note: Optional[str] = None

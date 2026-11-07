@@ -1,23 +1,19 @@
 import os
 import unittest
 
-os.environ["DATABASE_URL"] = "sqlite://"
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 from main import app
-from app.database import Base, get_db
+from app.database import get_db
+from mongo_support import MemorySession, memory_database
 from app.security import COOKIE_NAME
 
 
 class AccountTests(unittest.TestCase):
     def setUp(self):
-        self.engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
-        Base.metadata.create_all(self.engine)
-        factory = sessionmaker(bind=self.engine)
+        self.mongo = memory_database()
+        self.database_session = lambda: MemorySession(self.mongo)
         def database():
-            with factory() as db:
+            with self.database_session() as db:
                 yield db
         app.dependency_overrides[get_db] = database
         self.alice = TestClient(app)
@@ -28,7 +24,7 @@ class AccountTests(unittest.TestCase):
         self.alice.close()
         self.bob.close()
         app.dependency_overrides.clear()
-        self.engine.dispose()
+        self.mongo.client.close()
 
     def register(self, client, name):
         response = client.post("/api/auth/register", json={"username": name, "password": "test-password"})

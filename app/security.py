@@ -5,7 +5,7 @@ import secrets
 import time
 
 from fastapi import Depends, HTTPException, Request, Response
-from sqlalchemy.orm import Session
+from app.database import MongoSession as Session
 
 from app.database import get_db
 from app.models.user import LoginSession, User

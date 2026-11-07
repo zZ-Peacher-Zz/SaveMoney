@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
-from sqlalchemy.orm import Session
+from app.database import MongoSession as Session
 
 from app.database import get_db
 from app.dependencies import Ledger, current_ledger
@@ -15,11 +14,8 @@ def list_expenses(month: str, db: Session = Depends(get_db), ledger: Ledger = De
     Expense = ledger.expense
     start, end = month_bounds(month)
 
-    items = db.scalars(
-        select(Expense)
-        .where(ledger.filter(Expense), Expense.expense_date >= start, Expense.expense_date < end)
-        .order_by(Expense.expense_date.desc(), Expense.id.desc())
-    ).all()
+    items = db.find(Expense, {**ledger.filter(Expense), "expense_date": {"$gte": start.isoformat(), "$lt": end.isoformat()}},
+                    sort=[("expense_date", -1), ("id", -1)])
 
     return [serialize_ledger_expense(item, ledger, db) for item in items]
 
@@ -48,7 +44,7 @@ def update_expense(
     ledger: Ledger = Depends(current_ledger),
 ):
     Expense = ledger.expense
-    item = db.scalar(select(Expense).where(Expense.id == expense_id, ledger.filter(Expense)))
+    item = db.one(Expense, {"id": expense_id, **ledger.filter(Expense)})
     if not item:
         raise HTTPException(status_code=404, detail="Expense not found")
     if not ledger.can_edit(item):
@@ -67,7 +63,7 @@ def update_expense(
 @router.delete("/api/expenses/{expense_id}", status_code=204)
 def delete_expense(expense_id: int, db: Session = Depends(get_db), ledger: Ledger = Depends(current_ledger)):
     Expense = ledger.expense
-    item = db.scalar(select(Expense).where(Expense.id == expense_id, ledger.filter(Expense)))
+    item = db.one(Expense, {"id": expense_id, **ledger.filter(Expense)})
     if not item:
         raise HTTPException(status_code=404, detail="Expense not found")
     if not ledger.can_edit(item):

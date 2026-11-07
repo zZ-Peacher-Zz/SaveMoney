@@ -4,8 +4,6 @@ import unittest
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
 import test_accounts
 from app.models.recovery import RecoveryToken
@@ -39,8 +37,8 @@ class RecoveryTests(unittest.TestCase):
         response = self.bob.post("/api/auth/forgot-password", json={"email": "ALICE@example.com"})
         self.assertEqual(response.status_code, 200)
         token = self.token()
-        with Session(self.engine) as db:
-            self.assertNotEqual(db.scalar(select(RecoveryToken)).token_hash, token)
+        with self.database_session() as db:
+            self.assertNotEqual(db.one(RecoveryToken).token_hash, token)
         self.assertEqual(self.bob.post("/api/auth/reset-password", json={"token": token, "password": "new-password"}).status_code, 200)
         self.assertEqual(self.alice.get("/api/auth/me").status_code, 401)
         self.assertEqual(self.bob.post("/api/auth/reset-password", json={"token": token, "password": "other-password"}).status_code, 400)
@@ -63,8 +61,8 @@ class RecoveryTests(unittest.TestCase):
         self.assertEqual(self.alice.put("/api/auth/recovery-email", json={"email": "alice@example.com", "password": "wrong-password"}).status_code, 400)
         token = self.setup_email()
         self.assertEqual(self.bob.post("/api/auth/reset-password", json={"token": token, "password": "new-password"}).status_code, 400)
-        with Session(self.engine) as db:
-            db.scalar(select(RecoveryToken)).expires_at = int(time.time()) - 1
+        with self.database_session() as db:
+            db.one(RecoveryToken).expires_at = int(time.time()) - 1
             db.commit()
         self.assertEqual(self.bob.post("/api/auth/verify-email", json={"token": token}).status_code, 400)
         self.assertEqual(self.alice.put("/api/auth/recovery-email", json={"email": "not-email", "password": "test-password"}).status_code, 422)
@@ -85,8 +83,8 @@ class RecoveryTests(unittest.TestCase):
         from fastapi import HTTPException
         self.mail.side_effect = HTTPException(503, "Delivery failed")
         self.assertEqual(self.alice.put("/api/auth/recovery-email", json={"email": "alice@example.com", "password": "test-password"}).status_code, 503)
-        with Session(self.engine) as db:
-            self.assertIsNone(db.scalar(select(RecoveryToken)))
+        with self.database_session() as db:
+            self.assertIsNone(db.one(RecoveryToken))
         self.assertEqual(self.alice.get("/api/auth/me").status_code, 200)
 
     def test_email_change_invalidates_old_reset_links(self):
@@ -110,8 +108,8 @@ class RecoveryTests(unittest.TestCase):
         payload = {"username": "alice", "password": "test-password", "email": "alice@example.com"}
         for _ in range(6):
             self.assertEqual(self.alice.post("/api/auth/register", json=payload).status_code, 503)
-        with Session(self.engine) as db:
-            self.assertIsNone(db.scalar(select(RecoveryLimit)))
+        with self.database_session() as db:
+            self.assertIsNone(db.one(RecoveryLimit))
         self.mail.side_effect = None
         self.assertEqual(self.alice.post("/api/auth/register", json=payload).status_code, 201)
         response = self.bob.post("/api/auth/register", json={**payload, "username": "another"})

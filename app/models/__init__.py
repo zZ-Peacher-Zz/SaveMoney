@@ -1,4 +1,4 @@
-"""Register all SQLAlchemy models against the shared database Base."""
+"""Document models used to initialize MongoDB collections and unique indexes."""
 from app.models.user import LoginSession, User, UserAvatar
 from app.models.recovery import RecoveryEmail, RecoveryLimit, RecoveryToken
 from app.models.finance import Expense, MonthlyIncome

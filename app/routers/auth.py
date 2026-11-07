@@ -2,11 +2,10 @@ import hashlib
 import secrets
 
 from fastapi import Request, Response
-from sqlalchemy.exc import IntegrityError
+from pymongo.errors import DuplicateKeyError
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import delete, select
-from sqlalchemy.orm import Session
+from app.database import MongoSession as Session
 
 from app.database import get_db
 from app.models.user import LoginSession, User, UserAvatar
@@ -20,7 +19,7 @@ router = APIRouter()
 @router.post("/api/auth/register", status_code=201)
 def register(payload: Registration, request: Request, response: Response, db: Session = Depends(get_db)):
     username = payload.username.lower()
-    if db.scalar(select(User).where(User.username == username)):
+    if db.one(User, {"username": username}):
         raise HTTPException(status_code=409, detail="Username already exists")
     if payload.email:
         client = request.client.host if request.client else "unknown"
@@ -35,7 +34,7 @@ def register(payload: Registration, request: Request, response: Response, db: Se
         if payload.email:
             issue_link(db, user.id, str(payload.email), "verify")
         db.commit()
-    except IntegrityError:
+    except DuplicateKeyError:
         db.rollback()
         raise HTTPException(status_code=409, detail="Username already exists")
     return start_session(response, user, db)
@@ -43,7 +42,7 @@ def register(payload: Registration, request: Request, response: Response, db: Se
 
 @router.post("/api/auth/login")
 def login(payload: Credentials, response: Response, db: Session = Depends(get_db)):
-    user = db.scalar(select(User).where(User.username == payload.username.lower()))
+    user = db.one(User, {"username": payload.username.lower()})
     salt, stored = user.password_hash.split(":") if user else ("00" * 16, "")
     valid = secrets.compare_digest(hash_password(payload.password, salt), stored)
     if not user or not valid:
@@ -59,6 +58,6 @@ def me(user: User = Depends(current_user), db: Session = Depends(get_db)):
 @router.post("/api/auth/logout", status_code=204)
 def logout(request: Request, response: Response, db: Session = Depends(get_db)):
     token = request.cookies.get(COOKIE_NAME, "")
-    db.execute(delete(LoginSession).where(LoginSession.token_hash == hashlib.sha256(token.encode()).hexdigest()))
+    db.delete_many(LoginSession, {"token_hash": hashlib.sha256(token.encode()).hexdigest()})
     db.commit()
     response.delete_cookie(COOKIE_NAME)

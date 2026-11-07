@@ -1,299 +1,147 @@
-# Monthly Expense Tracker — FastAPI + SQLite
+# SaveMoney - FastAPI + MongoDB Atlas
 
-## Code structure
+A personal and family expense tracker with account login, avatars, monthly income,
+shared ledgers, group invitations, CSV export, and verified email password recovery.
 
-```text
-main.py                 # Create the FastAPI app, mount static files, include routers
-app/
-  database.py           # Engine, ORM Base, table initialization, get_db dependency
-  security.py           # Password hashes, sessions, current_user dependency
-  dependencies.py       # Group authorization and personal/family ledger selection
-  helpers.py            # Month validation and expense serialization
-  models/
-    user.py             # User and login session tables
-    finance.py          # Personal income and expense tables
-    group.py            # Family groups, membership, invitations, shared records
-  schemas/
-    auth.py             # Login and registration request validation
-    finance.py          # Income and expense request validation
-    groups.py           # Group and invitation request validation
-  routers/
-    auth.py             # Registration, login, logout, current account
-    groups.py           # Groups, members, invitations
-    months.py           # Monthly summary, income, clearing, CSV export
-    expenses.py         # List, create, update, delete expenses
-    pages.py            # Homepage and health check
-templates/              # HTML templates
-static/                 # CSS and JavaScript
-tests/                  # Account and family authorization regression tests
-```
+## Install
 
-Start the app with `uvicorn main:app --reload` as before. Routers use `get_db`
-from `app.database`; tests override that dependency with an isolated database.
-The refactor keeps existing API paths, request schemas, and database table names.
-
-Ứng dụng quản lý chi tiêu hằng tháng gồm:
-
-- Backend Python bằng FastAPI
-- SQLite database
-- SQLAlchemy ORM
-- REST API
-- Frontend HTML/CSS/JavaScript
-- CRUD khoản chi
-- Thu nhập theo từng tháng
-- Tổng chi, còn lại, tỷ lệ tiết kiệm
-- Tổng hợp chi tiêu theo danh mục
-- Export CSV
-- Responsive desktop/mobile
-
-## 1. Yêu cầu
-
-- Python 3.10+
-- pip
-
-## 2. Cài đặt
-
-Mở terminal tại thư mục project:
+Python 3.12 is selected by `.python-version`.
 
 ```bash
 python -m venv .venv
-```
-
-### Windows
-
-```bash
-.venv\Scripts\activate
-```
-
-### macOS / Linux
-
-```bash
-source .venv/bin/activate
-```
-
-Cài thư viện:
-
-```bash
+# Windows: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## 3. Chạy app
+## Configure MongoDB Atlas
 
-### Render Python runtime
+Copy [.env.example](.env.example) to `.env`. The app loads it automatically; existing
+process/Render environment variables take precedence. Never commit passwords or keys.
 
-The repository pins Python 3.12 in `.python-version` to match the current
-dependencies. Render's `PYTHON_VERSION` environment variable overrides this file;
-remove an existing 3.14 override before deploying. After changing the runtime,
-use **Manual Deploy → Clear build cache & deploy**.
+```env
+MONGODB_URI=mongodb+srv://moneyManage:<db_password>@cluster0.w96azfz.mongodb.net/?retryWrites=true&w=majority
+MONGODB_DB=SaveMoney
+APP_BASE_URL=http://127.0.0.1:8000
+COOKIE_SECURE=0
+```
 
-Build command: `pip install -r requirements.txt`
+Replace `<db_password>` with the Atlas database user's password, not the Atlas website
+login password. Percent-encode special characters in the username/password. Keep
+credentials in `.env` or Render Environment, never in source code or GitHub.
 
-Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+In Atlas:
+
+1. In Database Access, give the database user read/write access to `SaveMoney`.
+2. In Network Access, allow your local public IP and the Render service's outbound IP
+   ranges. See Render Settings for its outbound addresses.
+3. Ensure the cluster is active and the driver connection string is correct.
+
+A MongoDB replica set is required because writes use transactions. Atlas supports
+this topology; a standalone local mongod is not sufficient. Collections and unique
+indexes are initialized during app startup. The app fails explicitly if the URI is
+missing or still contains the password placeholder; it does not fall back to SQLite.
+
+## Run
 
 ```bash
 uvicorn main:app --reload
 ```
 
-Mở:
+Open http://127.0.0.1:8000. Signed-out visitors are redirected to `/login`.
+Separate account pages: `/register`, `/forgot-password`, `/reset-password`, `/verify-email`.
+API documentation is at `/docs`.
 
-```text
-http://127.0.0.1:8000
-```
+## Render
 
-FastAPI docs:
+Create a Python Web Service connected to this repository:
 
-```text
-http://127.0.0.1:8000/docs
-```
+- Build: `pip install -r requirements.txt`
+- Start: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+- Health check: `/api/health`
 
-## 4. Database
+Set `MONGODB_URI`, `MONGODB_DB`, `APP_BASE_URL=https://your-app.onrender.com`, and
+`COOKIE_SECURE=1` in Environment. Remove an old `PYTHON_VERSION=3.14...` override;
+the repository selects Python 3.12. `DATABASE_URL` is no longer used.
 
-App tự tạo file:
+Accounts, income, expenses, avatars, memberships, and recovery data live in Atlas,
+so the app does not need a Render persistent disk for these records. MongoDB starts
+empty unless you deliberately migrate existing data.
 
-```text
-expense_tracker.db
-```
+## Existing SQLite data
 
-Database có 2 bảng:
+The original SQLite file is retained unchanged. A migration tool copies persistent
+user/group records and keeps their integer IDs. It does not copy sessions, recovery
+tokens, or rate counters; users log in again and request fresh recovery links.
+Legacy shared tables from before user accounts are not assigned to an arbitrary user.
 
-### monthly_incomes
-
-- id
-- month
-- amount
-
-### expenses
-
-- id
-- expense_date
-- category
-- amount
-- note
-
-## 5. API chính
-
-```text
-GET    /api/months/{month}/summary
-PUT    /api/months/{month}/income
-GET    /api/months/{month}/expenses
-
-POST   /api/expenses
-PUT    /api/expenses/{expense_id}
-DELETE /api/expenses/{expense_id}
-
-DELETE /api/months/{month}
-GET    /api/months/{month}/export.csv
-```
-
-`month` có format:
-
-```text
-YYYY-MM
-```
-
-Ví dụ:
-
-```text
-2026-11
-```
-
-## 6. Luồng dữ liệu
-
-```text
-Browser
-  ↓ fetch()
-FastAPI REST API
-  ↓
-SQLAlchemy
-  ↓
-SQLite
-```
-
-Frontend không lưu dữ liệu bằng localStorage nữa. Khi refresh trang, dữ liệu được đọc lại từ database.
-
-## 7. Hướng phát triển tiếp
-
-Có thể nâng cấp project thành app dùng nhiều người bằng cách thêm:
-
-- User authentication
-- PostgreSQL
-- Household / shared wallet
-- Người chi: An / Phong
-- Thu nhập của từng người
-- Budget theo category
-- Recurring expense
-- Dashboard theo tháng / quý / năm
-- Docker
-- Alembic migration
-- Test bằng pytest
-- Deploy Render / Railway / Fly.io
-
-
-## User accounts
-
-### Password recovery
-
-New accounts created in the UI provide an email address. They must open the
-verification email and confirm it before the address can recover their account.
-Existing users can add or change their recovery email in **Email khôi phục tài khoản**
-after logging in and entering their current password. The old verified address
-continues to work until the replacement is verified. An email can belong to only
-one verified account. Legacy API registrations without email still work.
-
-**Quên mật khẩu?** sends a reset link only to verified addresses. The response does
-not disclose whether an email belongs to an account. Links expire after 30 minutes,
-are stored only as hashes, and are consumed once. Resetting a password invalidates
-all existing login sessions and recovery links. Requests have per-address and
-per-client limits. No reset tokens are returned in API responses or printed to logs.
-
-Copy `.env.example` to `.env` locally (never commit secrets), then run
-`uvicorn main:app --reload --env-file .env`. On Render, set variables in Environment:
-
-- `APP_BASE_URL`: public app URL, e.g. `https://your-app.onrender.com`.
-- `COOKIE_SECURE=1` for HTTPS. For local HTTP development, use `COOKIE_SECURE=0`
-  and `APP_BASE_URL=http://127.0.0.1:8000`.
-- `EMAIL_FROM`: sender address authorized by your email provider.
-- `RESEND_API_KEY`: enables HTTPS delivery through Resend; use a verified domain
-  and sender to deliver to other users, not only your provider's test recipients.
-
-Render Free blocks common SMTP ports, so use the HTTPS option there. Alternatively,
-on a host that permits SMTP, set `SMTP_HOST`, `SMTP_PORT` (587 STARTTLS or 465 TLS),
-`SMTP_USER`, and `SMTP_PASSWORD` instead of `RESEND_API_KEY`.
-Provider accounts, sender verification, and credentials must be configured before
-real emails can be sent. Without delivery configuration the app reports an error;
-it does not expose recovery links as a fallback.
-
-Routes: `GET/PUT /api/auth/recovery-email`, `POST /api/auth/verify-email`,
-`POST /api/auth/forgot-password`, and `POST /api/auth/reset-password`.
-
-Each account can upload or remove its avatar using the photo next to the username
-or **Đổi ảnh đại diện**. Supported formats are PNG, JPEG, and WebP, up to 5 MB
-and 16 megapixels.
-Before saving, a dialog previews the avatar in a circular frame. Drag the photo
-or use arrow keys to position it, and use the zoom slider to adjust the crop.
-**Hủy** or Escape closes the dialog without changing the saved avatar.
-The selected crop is saved as a 256×256 PNG in the
-`user_avatars` table. Existing accounts show their initial until they choose a photo.
-Install the updated requirements and restart the server after this update.
-
-Authenticated avatar endpoints: `PUT /api/auth/avatar` (raw image body),
-`GET /api/auth/avatar`, and `DELETE /api/auth/avatar`.
-
-Create an account using **T?o t?i kho?n**, or sign in using **??ng nh?p**.
-Usernames are case-insensitive, 3?50 characters (letters, numbers, `_`, `.`, `-`).
-Passwords must be 8?128 characters. Use **??ng xu?t** to sign out.
-
-Each user has their own monthly income, expenses, summary, and CSV exports.
-Passwords are stored as salted scrypt hashes. Login sessions expire after seven days
-and use an HttpOnly, SameSite=Strict cookie. Set `COOKIE_SECURE=1` when serving over HTTPS.
-
-New tables: `users`, `login_sessions`, `user_monthly_incomes`, and `user_expenses`.
-Existing shared `monthly_incomes` and `expenses` tables remain untouched; their
-records are not automatically assigned to any account. New accounts start empty.
-The optional `DATABASE_URL` environment variable overrides the SQLite database URL.
-
-Run the account and record isolation tests:
+Stop the app and back up SQLite before migration. Use a new, empty destination database:
 
 ```bash
-pip install httpx
-python -m unittest discover -s tests
+# Read-only preview: no connection to Atlas and no database writes
+python scripts/migrate_sqlite_to_mongo.py
+# After verifying the configured destination:
+python scripts/migrate_sqlite_to_mongo.py --apply
 ```
 
-## Family groups
+The tool refuses a non-empty destination and commits the copy and ID counters in one
+transaction. It never deletes or modifies the source SQLite file.
 
-In **Quản lý gia đình**, create a group, select it in **Sổ thu chi**, and invite an
-existing account by username. The invited user signs in, clicks **Làm mới nhóm và
-lời mời**, and accepts or declines the invitation. Only accepted members can view
-the group's records. A user can belong to multiple groups.
+## Email recovery
 
-The selected ledger determines where income and expenses are saved. Personal
-records remain private. In a family ledger, each user sets their own monthly
-income contribution; the dashboard sums all contributions and shared expenses.
-These contributions are recorded separately from personal income, so only enter
-the amount intended for the shared budget. Remaining balance is income minus
-expenses for the selected month, rather than a separate savings account.
+Set `RESEND_API_KEY` and `EMAIL_FROM` for HTTPS mail delivery, and set `APP_BASE_URL`
+to the exact public app address. Render Free blocks common SMTP ports; use Resend
+there. On other hosts, SMTP is also supported with `SMTP_HOST`, `SMTP_PORT` (587
+STARTTLS or 465 TLS), `SMTP_USER`, and `SMTP_PASSWORD`.
 
-Expenses show their author. Members can edit/delete their own expenses; the owner
-can edit/delete any group expense, remove members, invite users, and clear a group
-month. Removing a member immediately revokes access but retains their historical
-income and expenses in the family ledger. The owner cannot remove themselves.
+New UI accounts provide a recovery email. Existing users add one after login using
+**Email khoi phuc tai khoan** and their current password. Recovery requires verifying
+the address first. An email can belong to only one verified account.
 
-Family features use new tables and leave existing personal data unchanged.
-Savings goals are reserved for a later version.
+Links expire after 30 minutes, are stored only as hashes, and can be consumed once.
+Password reset revokes login sessions and outstanding recovery links atomically.
+Old email links are redirected to the dedicated recovery page. No link is printed to
+logs or returned as a fallback when mail delivery is not configured.
 
-Group API:
+`onboarding@resend.dev` is for testing to the email on your Resend account. Verify a
+domain and use its sender address before sending to other family members.
 
-```text
-GET    /api/groups
-POST   /api/groups                         {"name": "Family"}
-GET    /api/groups/{group_id}/members
-POST   /api/groups/{group_id}/invitations   {"username": "existing_user"}
-DELETE /api/groups/{group_id}/members/{member_id}
-GET    /api/invitations
-POST   /api/invitations/{group_id}/accept
-DELETE /api/invitations/{group_id}
+## Family ledgers
+
+Create a group, invite an existing username, and have the recipient accept the
+invitation. Invitations are checked automatically every three seconds while the tab
+is visible. Select a group or the personal ledger before saving income/expenses.
+Personal records remain private. Each member sets their own income contribution;
+the summary adds all contributions and shared expenses for the chosen month.
+
+Members edit their own expenses. The owner can manage all group expenses, invite
+and remove members, and clear a group month. Historical shared records remain after
+member removal, while that user's access is revoked. Avatars are visible only to
+members sharing the selected group. Savings goals are not implemented yet.
+
+## Code structure
+
+- [main.py](main.py): app startup, static files, router registration.
+- [app/database.py](app/database.py): shared PyMongo client, indexes, transactions,
+  and request-scoped document tracking.
+- [app/models/](app/models/): dataclass document definitions and unique keys.
+- [app/routers/](app/routers/): account, recovery, family, finance, and page endpoints.
+- [app/schemas/](app/schemas/): request validation with Pydantic.
+- [app/security.py](app/security.py): scrypt password hashes and HttpOnly session cookies.
+- [app/dependencies.py](app/dependencies.py): group permissions and ledger selection.
+- [templates/](templates/), [static/](static/): frontend.
+
+The public API preserves its existing integer IDs and JSON fields. MongoDB stores
+expense dates as ISO `YYYY-MM-DD` strings, and avatars as PNG binary data.
+
+## Tests
+
+```bash
+pip install -r requirements-dev.txt
+python -m unittest discover -s tests -v
 ```
 
-Append `?group_id={group_id}` to the existing income, expense, summary, clear-month,
-and CSV endpoints to operate on a family ledger. Omitting it selects personal data.
-All group requests check current membership; owner-only actions also check ownership.
+Unit tests use an isolated in-memory Mongo implementation with simulated rollback.
+They do not prove real server transaction isolation. To run the opt-in transaction
+integration tests, set `MONGODB_TEST_URI` to a replica-set test cluster; the tests use
+and clean up a randomly named database, never the configured production database.
