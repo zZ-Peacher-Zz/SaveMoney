@@ -16,6 +16,62 @@ let editingId = null;
 let familyGroups = [];
 const ledgerPicker = document.getElementById("ledgerPicker");
 let loadVersion = 0;
+let historyItems = [];
+const historyFilters = document.getElementById("historyFilters");
+const historySearch = document.getElementById("historySearch");
+const historyCategory = document.getElementById("historyCategory");
+const historyFrom = document.getElementById("historyFrom");
+const historyTo = document.getElementById("historyTo");
+const historyFilterStatus = document.getElementById("historyFilterStatus");
+let historyScope = "";
+
+function normalizeSearch(value) {
+  return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\u0111/g, "d").replace(/\u0110/g, "D").toLocaleLowerCase("vi");
+}
+
+function updateHistory(items) {
+  const scope = `${monthPicker.value}:${ledgerPicker.value}`;
+  if (scope !== historyScope) historyFilters.reset();
+  historyScope = scope;
+  historyItems = items;
+  const category = historyCategory.value;
+  const categories = [...new Set(items.map(item => item.category))].sort((a, b) => a.localeCompare(b, "vi"));
+  historyCategory.innerHTML = '<option value="">T\u1ea5t c\u1ea3 danh m\u1ee5c</option>' + categories.map(value => `<option value="${html(value)}">${html(value)}</option>`).join("");
+  historyCategory.value = categories.includes(category) ? category : "";
+  const [year, month] = monthPicker.value.split("-").map(Number);
+  const end = new Date(year, month, 0).getDate();
+  for (const input of [historyFrom, historyTo]) {
+    input.min = `${monthPicker.value}-01`;
+    input.max = `${monthPicker.value}-${end}`;
+  }
+  filterHistory();
+}
+
+function filterHistory() {
+  const query = normalizeSearch(historySearch.value.trim());
+  const invalidRange = historyFrom.value && historyTo.value && historyFrom.value > historyTo.value;
+  const filtered = invalidRange ? [] : historyItems.filter(item =>
+    (!historyCategory.value || item.category === historyCategory.value) &&
+    (!historyFrom.value || item.expense_date >= historyFrom.value) &&
+    (!historyTo.value || item.expense_date <= historyTo.value) &&
+    (!query || normalizeSearch([item.note, item.category, item.username].join(" ")).includes(query)));
+  renderExpenses(filtered);
+  const total = filtered.reduce((sum, item) => sum + Number(item.amount), 0);
+  historyFilterStatus.textContent = invalidRange
+    ? "Ng\u00e0y b\u1eaft \u0111\u1ea7u ph\u1ea3i tr\u01b0\u1edbc ho\u1eb7c b\u1eb1ng ng\u00e0y k\u1ebft th\u00fac."
+    : `${filtered.length}/${historyItems.length} giao d\u1ecbch \u00b7 T\u1ed5ng k\u1ebft qu\u1ea3: ${money(total)}`;
+  if (!filtered.length) {
+    emptyState.querySelector("strong").textContent = historyItems.length ? "Kh\u00f4ng c\u00f3 k\u1ebft qu\u1ea3 ph\u00f9 h\u1ee3p" : "Ch\u01b0a c\u00f3 kho\u1ea3n chi";
+    emptyState.querySelector("span").textContent = historyItems.length ? "Th\u1eed \u0111\u1ed5i ho\u1eb7c x\u00f3a b\u1ed9 l\u1ecdc." : "Th\u00eam giao d\u1ecbch \u0111\u1ea7u ti\u00ean \u0111\u1ec3 b\u1eaft \u0111\u1ea7u theo d\u00f5i th\u00e1ng n\u00e0y.";
+  }
+}
+historyFilters.addEventListener("submit", event => event.preventDefault());
+historySearch.addEventListener("input", filterHistory);
+for (const input of [historyCategory, historyFrom, historyTo]) input.addEventListener("change", filterHistory);
+document.getElementById("clearHistoryFilters").addEventListener("click", () => {
+  historyFilters.reset();
+  filterHistory();
+});
 
 function ledgerUrl(url) {
   return ledgerPicker.value ? `${url}?group_id=${encodeURIComponent(ledgerPicker.value)}` : url;
@@ -103,23 +159,50 @@ function resetForm() {
   cancelEditBtn.classList.add("hidden");
 }
 
+function setDashboardLoading(loading, error = "") {
+  const container = document.getElementById("dashboard");
+  container.classList.toggle("is-loading", loading);
+  container.classList.toggle("load-failed", Boolean(error));
+  container.setAttribute("aria-busy", String(loading));
+  const message = document.getElementById("dashboardLoadMessage");
+  message.textContent = error || (loading ? "\u0110ang t\u1ea3i d\u1eef li\u1ec7u..." : "\u0110\u00e3 t\u1ea3i d\u1eef li\u1ec7u.");
+  message.classList.toggle("sr-only", !error);
+  document.getElementById("retryDashboard").classList.toggle("hidden", !error);
+}
+
 async function loadAll() {
   const requestVersion = ++loadVersion;
   const version = accountVersion;
   const month = monthPicker.value;
-  const [summary, expenses] = await Promise.all([
-    api(`/api/months/${month}/summary`),
-    api(`/api/months/${month}/expenses`)
-  ]);
-
-  if (version !== accountVersion || requestVersion !== loadVersion) return;
-  renderSummary(summary);
-  renderBreakdown(summary);
-  renderExpenses(expenses);
-
-  incomeInput.value = summary.my_income || "";
-  document.getElementById("exportBtn").href = ledgerUrl(`/api/months/${month}/export.csv`);
+  setDashboardLoading(true);
+  try {
+    const [summary, expenses] = await Promise.all([
+      api(`/api/months/${month}/summary`),
+      api(`/api/months/${month}/expenses`)
+    ]);
+    if (version !== accountVersion || requestVersion !== loadVersion) return;
+    renderSummary(summary);
+    renderBreakdown(summary);
+    updateHistory(expenses);
+    incomeInput.value = summary.my_income || "";
+    document.getElementById("exportBtn").href = ledgerUrl(`/api/months/${month}/export.csv`);
+    setDashboardLoading(false);
+  } catch (error) {
+    if (version === accountVersion && requestVersion === loadVersion) setDashboardLoading(false, error.message);
+    throw error;
+  }
 }
+
+async function initializeDashboardData() {
+  setDashboardLoading(true);
+  try {
+    await refreshGroups();
+    await loadAll();
+  } catch (error) {
+    setDashboardLoading(false, error.message);
+  }
+}
+document.getElementById("retryDashboard").addEventListener("click", initializeDashboardData);
 
 function renderSummary(summary) {
   document.getElementById("incomeValue").textContent = money(summary.income);
@@ -185,11 +268,11 @@ function renderExpenses(items) {
     </tr>
     ${expenses.map(item => `
     <tr>
-      <td>${formatDate(item.expense_date)}</td>
-      <td><span class="tag">${html(item.category)}</span>${ledgerPicker.value ? `<small class="record-author">${html(item.username)}</small>` : ""}</td>
-      <td>${html(item.note || "—")}</td>
-      <td class="amount">${money(item.amount)}</td>
-      <td>
+      <td data-label="Ng\u00e0y">${formatDate(item.expense_date)}</td>
+      <td data-label="Ph\u00e2n lo\u1ea1i"><span class="tag">${html(item.category)}</span>${ledgerPicker.value ? `<small class="record-author">${html(item.username)}</small>` : ""}</td>
+      <td data-label="Ghi ch\u00fa">${html(item.note || "—")}</td>
+      <td class="amount" data-label="S\u1ed1 ti\u1ec1n">${money(item.amount)}</td>
+      <td data-label="Thao t\u00e1c">
         <div class="row-actions">
           ${item.can_edit ? `<button class="icon-button" data-action="edit" data-id="${item.id}">Sửa</button>
           <button class="icon-button" data-action="delete" data-id="${item.id}">Xoá</button>` : ""}
@@ -222,7 +305,8 @@ async function editExpense(id, items) {
   document.getElementById("submitBtn").textContent = "Lưu thay đổi";
   cancelEditBtn.classList.remove("hidden");
 
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  expenseForm.scrollIntoView({ behavior: "smooth", block: "center" });
+  amountInput.focus({ preventScroll: true });
 }
 
 async function deleteExpense(id) {
@@ -330,12 +414,9 @@ function showAuth() {
 async function showDashboard(user) {
   document.getElementById("currentUser").textContent = user.username;
   document.getElementById("avatarInitial").textContent = user.username.slice(0, 1).toUpperCase();
-  const profile = await api("/api/auth/me");
-  renderAvatar(profile.avatar_url);
+  renderAvatar(user.avatar_url);
   resetForm();
-  await refreshGroups();
-  await loadAll();
-  dashboard.classList.remove("hidden");
+  await initializeDashboardData();
   clearInterval(invitationTimer);
   invitationTimer = setInterval(pollInvitations, 3000);
   document.dispatchEvent(new Event("account-ready"));
@@ -439,6 +520,7 @@ document.addEventListener("visibilitychange", pollInvitations);
 
 async function renderGroupDetails() {
   const group = selectedGroup();
+  document.dispatchEvent(new CustomEvent("family-ledger-changed", {detail: group}));
   document.getElementById("groupDetails").classList.toggle("hidden", !group);
   document.getElementById("inviteForm").classList.toggle("hidden", !group?.is_owner);
   document.getElementById("incomeTitle").textContent = group ? "Thu nhập bạn góp vào gia đình" : "Thu nhập tháng";

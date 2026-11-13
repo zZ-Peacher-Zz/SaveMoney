@@ -84,6 +84,15 @@ and remove members, and clear a group month. Historical shared records remain af
 member removal, while that user's access is revoked. Avatars are visible only to
 members sharing the selected group. Savings goals are not implemented yet.
 
+## Family chat
+
+Select a family ledger to open its shared chat. Only accepted current members can
+read or send messages; invitations alone do not grant access. Messages are stored
+in PostgreSQL in `group_messages` (created automatically at app startup).
+The chat checks for updates every three seconds while the tab is visible, supports
+older message history, and accepts text up to 2,000 characters per message.
+Each family has a separate conversation. Removing a member revokes chat access.
+
 ## Code structure
 
 - [main.py](main.py): app startup, static files, router registration.

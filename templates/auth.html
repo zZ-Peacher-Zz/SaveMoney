@@ -4,9 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ title }} · SaveMoney</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20261113-responsive">
+  <link rel="stylesheet" href="/static/styles.css?v=20261113-gilroy-1">
 </head>
 <body>
+  {% include "christmas_effects.html" %}
   <main class="panel auth-panel">
     <div class="eyebrow">SAVEMONEY</div>
     <h1>{{ title }}</h1>
@@ -17,9 +18,9 @@
     {% endif %}
     <form id="authPageForm" data-page="{{ page }}">
       <label><span>Tên đăng nhập</span><input id="usernameInput" autocomplete="username" minlength="3" maxlength="50" pattern="[a-zA-Z0-9_.\-]+" required></label>
-      <label><span>Mật khẩu</span><input id="passwordInput" type="password" autocomplete="{{ 'new-password' if page == 'register' else 'current-password' }}" minlength="8" maxlength="128" required></label>
+      <div class="password-field"><label for="passwordInput">Mật khẩu</label><div class="password-control"><input id="passwordInput" type="password" autocomplete="{{ 'new-password' if page == 'register' else 'current-password' }}" minlength="8" maxlength="128" required><button class="password-toggle" type="button" data-password-target="passwordInput" aria-controls="passwordInput" aria-label="Hi&#7879;n m&#7853;t kh&#7849;u" aria-pressed="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="M3 3l18 18"/></svg></button></div></div>
       {% if page == "register" %}
-      <label><span>Nhập lại mật khẩu</span><input id="registerConfirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label>
+      <div class="password-field"><label for="registerConfirmPassword">Nhập lại mật khẩu</label><div class="password-control"><input id="registerConfirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required><button class="password-toggle" type="button" data-password-target="registerConfirmPassword" aria-controls="registerConfirmPassword" aria-label="Hi&#7879;n m&#7853;t kh&#7849;u" aria-pressed="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="M3 3l18 18"/></svg></button></div></div>
       {% endif %}
       <p id="authPageStatus" role="status" aria-live="polite"></p>
       <button class="button primary" type="submit">{{ title }}</button>
@@ -30,6 +31,7 @@
     </nav>
   </main>
   <script src="/static/auth-api.js"></script>
-  <script src="/static/auth.js?v=20261113-3"></script>
+  <script src="/static/auth.js?v=20261113-4"></script>
+  {% include "music_player.html" %}
 </body>
 </html>

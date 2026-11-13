@@ -19,3 +19,13 @@ form.addEventListener("submit", async event => {
   } catch (error) { status.textContent = error.message; }
   finally { button.disabled = false; }
 });
+
+document.querySelectorAll("[data-password-target]").forEach(button => {
+  button.addEventListener("click", () => {
+    const input = document.getElementById(button.dataset.passwordTarget);
+    const visible = input.type === "password";
+    input.type = visible ? "text" : "password";
+    button.setAttribute("aria-pressed", String(visible));
+    button.setAttribute("aria-label", visible ? "\u1ea8n m\u1eadt kh\u1ea9u" : "Hi\u1ec7n m\u1eadt kh\u1ea9u");
+  });
+});

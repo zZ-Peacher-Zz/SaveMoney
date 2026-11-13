@@ -1,0 +1,52 @@
+<div class="winter-sky" aria-hidden="true">
+  <div class="aurora aurora-green"></div><div class="aurora aurora-violet"></div>
+  <div class="sky-stars">
+    {% for i in range(65) %}
+    <span class="sky-star" style="--x: {{ (i * 37 + 3) % 100 }}%; --y: {{ (i * 23 + 5) % 76 }}%; --size: {{ 1 + i % 3 }}px; --delay: -{{ i % 9 }}s; --duration: {{ 3 + i % 5 }}s;"></span>
+    {% endfor %}
+  </div>
+  <div class="winter-city"></div>
+</div>
+<div class="christmas-effects" aria-hidden="true">
+  <div class="snowfall">
+    {% for i in range(36) %}
+    <span class="snowflake" style="--x: {{ (i * 37) % 100 }}%; --size: {{ 2 + i % 4 }}px; --duration: {{ 10 + i % 11 }}s; --delay: -{{ i * 1.7 }}s; --drift: {{ (i % 5 - 2) * 12 }}px;"></span>
+    {% endfor %}
+  </div>
+  <div class="santa-route"><div class="santa-facing">
+    <svg class="santa-sleigh" viewBox="0 0 320 130" xmlns="http://www.w3.org/2000/svg" focusable="false">
+      <defs>
+        <g id="christmas-reindeer">
+          <path d="M18 65 8 53M67 63l9-22 17-3" fill="none" stroke="#875032" stroke-width="9" stroke-linecap="round"/>
+          <ellipse cx="42" cy="66" rx="28" ry="14" fill="#ac754a"/>
+          <path d="m62 61 13-23 12 10-10 22" fill="#ac754a"/>
+          <ellipse cx="88" cy="39" rx="16" ry="10" fill="#ac754a"/>
+          <path d="m79 32-5-13 10 4M84 30l3-16 6 7" fill="#875032"/>
+          <path d="M81 27 77 9m0 8-8-5m8 1 5-8M89 27l7-20m-3 9 9-3m-6-2-3-7" fill="none" stroke="#67432f" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="93" cy="36" r="2" fill="#292c32"/><circle cx="103" cy="40" r="4" fill="#e34449"/>
+          <path d="m72 49 9 7" stroke="#bb3342" stroke-width="6"/><circle cx="80" cy="56" r="3" fill="#f3ca67"/>
+          <g class="reindeer-legs" fill="none" stroke="#875032" stroke-width="5" stroke-linecap="round">
+            <path d="m25 74-10 17 13 5m14-21 4 19 13-2m0-21 11 16 12-5"/>
+          </g>
+        </g>
+      </defs>
+      <path d="M95 78Q168 98 247 60M98 82Q170 110 296 58" fill="none" stroke="#b98b40" stroke-width="2"/>
+      <use href="#christmas-reindeer" x="143" y="5"/>
+      <use href="#christmas-reindeer" x="205" y="-8"/>
+      <path d="M30 69Q10 40 30 30q30-19 48 18l-2 33" fill="#b68b44"/>
+      <path d="m24 40 39 18M36 31l11 14" stroke="#d9ba77" stroke-width="3"/>
+      <rect x="24" y="66" width="22" height="21" rx="2" fill="#44896c"/><path d="M35 66v21m-11-11h22" stroke="#f4d485" stroke-width="3"/>
+      <path d="M51 72q-2-29 23-31 23 1 26 31" fill="#cf3c4b"/>
+      <path d="m56 65 28 13 20-10" fill="none" stroke="#cf3c4b" stroke-width="10" stroke-linecap="round"/>
+      <circle cx="104" cy="68" r="5" fill="#fff4df"/>
+      <path d="M55 69h38" stroke="#273b38" stroke-width="5"/><rect x="70" y="66" width="9" height="7" fill="#f4c85f"/>
+      <circle cx="75" cy="33" r="15" fill="#f5c8a4"/>
+      <path d="M61 33q-1 28 15 25 16-5 13-25-3 10-14 9-7 0-14-9" fill="#fffdf5"/>
+      <circle cx="70" cy="31" r="1.5" fill="#263a35"/><circle cx="81" cy="31" r="1.5" fill="#263a35"/><circle cx="76" cy="36" r="3" fill="#edac92"/>
+      <path d="M60 22q8-28 27-15l12 17-17-7-3 8" fill="#cf3c4b"/><path d="M60 23q14-5 29 1" stroke="#fffdf5" stroke-width="6" stroke-linecap="round"/><circle cx="99" cy="23" r="5" fill="#fffdf5"/>
+      <path d="M18 80h72q14 0 17-15l7 3-5 26q-2 10-18 10H34q-12-2-16-24" fill="#bd3043"/>
+      <path d="M19 80h69q12 0 17-13" fill="none" stroke="#f3ca67" stroke-width="4" stroke-linecap="round"/>
+      <path d="M31 105v8m59-10v10M12 115h97q16 0 17-13" fill="none" stroke="#d6ad50" stroke-width="5" stroke-linecap="round"/>
+    </svg>
+  </div></div>
+</div>

@@ -4,10 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chi tiêu tháng</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20261113-responsive">
+  <link rel="stylesheet" href="/static/styles.css?v=20261113-gilroy-1">
 </head>
 <body>
-  <div id="dashboard" class="shell hidden">
+  {% include "christmas_effects.html" %}
+  <div id="dashboard" class="shell is-loading" aria-busy="true">
     <header class="header">
       <div>
         <div class="eyebrow">PERSONAL FINANCE</div>
@@ -35,6 +36,16 @@
         </label>
       </div>
     </header>
+
+    <section id="loadingSkeleton" class="loading-skeleton" aria-hidden="true">
+      <div class="panel skeleton-family"><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+      <div class="metrics">{% for i in range(4) %}<div class="metric-card"><div class="skeleton-line short"></div><div class="skeleton-line number"></div><div class="skeleton-line short"></div></div>{% endfor %}</div>
+      <div class="layout">
+        <div class="panel">{% for i in range(5) %}<div class="skeleton-line short"></div><div class="skeleton-line field"></div>{% endfor %}</div>
+        <div class="right-column"><div class="panel">{% for i in range(4) %}<div class="skeleton-line"></div>{% endfor %}</div><div class="panel">{% for i in range(6) %}<div class="skeleton-line field"></div>{% endfor %}</div></div>
+      </div>
+    </section>
+    <div id="dashboardLoadStatus" role="status" aria-live="polite"><span id="dashboardLoadMessage" class="sr-only">&#272;ang t&#7843;i d&#7919; li&#7879;u...</span><button id="retryDashboard" class="button secondary hidden" type="button">Th&#7917; l&#7841;i</button></div>
 
     <section class="panel family-panel">
       <div class="panel-title split">
@@ -152,6 +163,21 @@
       </aside>
 
       <section class="right-column">
+        <section id="familyChat" class="panel chat-panel hidden" aria-labelledby="chatTitle">
+          <details open>
+            <summary class="chat-heading"><span class="chat-icon" aria-hidden="true">&#9993;</span><span><span class="overline">FAMILY CHAT</span><strong id="chatTitle">G&#243;c tr&#242; chuy&#7879;n</strong></span></summary>
+            <p id="chatGroupName" class="chat-subtitle"></p>
+            <button id="chatOlder" type="button" class="button ghost compact hidden">Tin nh&#7855;n c&#361; h&#417;n</button>
+            <div id="chatMessages" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions" aria-label="Tin nh&#7855;n gia &#273;&#236;nh" tabindex="0"></div>
+            <p id="chatStatus" role="status" class="chat-status"></p>
+            <form id="chatForm">
+              <label for="chatInput">L&#7901;i nh&#7855;n cho gia &#273;&#236;nh</label>
+              <textarea id="chatInput" maxlength="2000" rows="2" required placeholder="H&#244;m nay nh&#224; m&#236;nh c&#243; g&#236; vui?"></textarea>
+              <div class="chat-compose-actions"><small>T&#7889;i &#273;a 2.000 k&#253; t&#7921;</small><button id="chatSend" class="button primary" type="submit">G&#7917;i tin &#8599;</button></div>
+            </form>
+          </details>
+        </section>
+
         <section class="panel">
           <div class="panel-title split">
             <div>
@@ -178,13 +204,22 @@
             </div>
           </div>
 
+          <form id="historyFilters" class="history-filters" aria-label="B&#7897; l&#7885;c l&#7883;ch s&#7917; chi ti&#234;u">
+            <label class="history-search"><span>T&#236;m ki&#7871;m</span><input id="historySearch" type="search" placeholder="Ghi ch&#250;, danh m&#7909;c, th&#224;nh vi&#234;n" maxlength="255"></label>
+            <label><span>Danh m&#7909;c</span><select id="historyCategory"><option value="">T&#7845;t c&#7843; danh m&#7909;c</option></select></label>
+            <label><span>T&#7915; ng&#224;y</span><input id="historyFrom" type="date"></label>
+            <label><span>&#272;&#7871;n ng&#224;y</span><input id="historyTo" type="date"></label>
+            <button id="clearHistoryFilters" class="button ghost compact" type="button">X&#243;a b&#7897; l&#7885;c</button>
+            <p id="historyFilterStatus" role="status" aria-live="polite"></p>
+          </form>
+
           <div id="emptyState" class="empty-state">
             <div class="empty-icon">₫</div>
             <strong>Chưa có khoản chi</strong>
             <span>Thêm giao dịch đầu tiên để bắt đầu theo dõi tháng này.</span>
           </div>
 
-          <div id="tableWrap" class="table-wrap hidden" tabindex="0" role="region" aria-label="L&#7883;ch s&#7917; chi ti&#234;u, cu&#7897;n ngang &#273;&#7875; xem &#273;&#7847;y &#273;&#7911;">
+          <div id="tableWrap" class="table-wrap hidden" role="region" aria-label="L&#7883;ch s&#7917; chi ti&#234;u">
             <table>
               <thead>
                 <tr>
@@ -215,6 +250,8 @@
   </dialog>
   <div id="toast" class="toast hidden"></div>
   <script src="/static/avatar-crop.js"></script>
-  <script src="/static/app.js?v=20261113-2"></script>
+  <script src="/static/app.js?v=20261113-family-3d-1"></script>
+  <script src="/static/family-chat.js?v=1"></script>
+  {% include "music_player.html" %}
 </body>
 </html>
