@@ -454,7 +454,6 @@ th {
 #forgotPasswordBtn { margin-top: 12px; }
 #forgotPasswordForm { margin-top: 14px; }
 #resetPasswordFields { display: grid; gap: 14px; }
-#recoveryEmailForm { max-width: 480px; }
 .button:disabled { opacity: .6; cursor: wait; }
 
 .family-panel { margin-bottom: 18px; }

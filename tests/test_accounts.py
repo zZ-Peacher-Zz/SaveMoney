@@ -217,8 +217,26 @@ class AccountTests(unittest.TestCase):
         self.assertIn('id="dashboard"', response.text)
         self.alice.post("/api/auth/logout")
         self.assertEqual(self.alice.get("/", follow_redirects=False).status_code, 303)
-        for path in ("/login", "/register", "/forgot-password", "/reset-password", "/verify-email"):
+        for path in ("/login", "/register"):
             self.assertEqual(self.alice.get(path, follow_redirects=False).status_code, 200)
+
+
+    def test_email_recovery_is_removed(self):
+        for path in ("/forgot-password", "/reset-password", "/verify-email"):
+            self.assertEqual(self.alice.get(path).status_code, 404)
+        for method, path in (("get", "/api/auth/recovery-email"),
+                             ("put", "/api/auth/recovery-email"),
+                             ("post", "/api/auth/forgot-password"),
+                             ("post", "/api/auth/reset-password"),
+                             ("post", "/api/auth/verify-email")):
+            self.assertEqual(getattr(self.alice, method)(path).status_code, 404)
+        for path in ("/login", "/register"):
+            page = self.alice.get(path)
+            self.assertEqual(page.status_code, 200)
+            self.assertNotIn("forgot-password", page.text)
+            self.assertNotIn('id="emailInput"', page.text)
+        self.register(self.alice, "alice")
+        self.assertNotIn('id="recoveryEmailForm"', self.alice.get("/").text)
 
 
 if __name__ == "__main__":

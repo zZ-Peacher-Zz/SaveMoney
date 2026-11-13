@@ -542,10 +542,7 @@ document.getElementById("refreshGroupsBtn").addEventListener("click", async () =
 });
 
 resetForm();
-if (!(legacyRecovery.get("token") && ["reset", "verify"].includes(legacyRecovery.get("action")))) {
 api("/api/auth/me").then(showDashboard).catch(error => {
   showAuth();
   if (error.message !== "Please log in") showToast(error.message);
 });
-
-}

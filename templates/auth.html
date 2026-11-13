@@ -4,38 +4,29 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ title }} · SaveMoney</title>
-  <script src="/static/recovery-redirect.js"></script>
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
   <main class="panel auth-panel">
     <div class="eyebrow">SAVEMONEY</div>
     <h1>{{ title }}</h1>
-    {% if page == "forgot-password" %}
-    <p>Nhập email khôi phục đã xác minh để nhận link đặt lại mật khẩu.</p>
-    {% elif page == "register" %}
+    {% if page == "register" %}
     <p>Tạo tài khoản để quản lý thu chi cá nhân và gia đình.</p>
     {% else %}
     <p>Đăng nhập để tiếp tục quản lý thu chi của bạn.</p>
     {% endif %}
     <form id="authPageForm" data-page="{{ page }}">
-      {% if page != "forgot-password" %}
       <label><span>Tên đăng nhập</span><input id="usernameInput" autocomplete="username" minlength="3" maxlength="50" pattern="[a-zA-Z0-9_.\-]+" required></label>
       <label><span>Mật khẩu</span><input id="passwordInput" type="password" autocomplete="{{ 'new-password' if page == 'register' else 'current-password' }}" minlength="8" maxlength="128" required></label>
-      {% endif %}
-      {% if page != "login" %}
-      <label><span>Email {{ 'khôi phục đã xác minh' if page == 'forgot-password' else 'khôi phục' }}</span><input id="emailInput" type="email" maxlength="254" autocomplete="email" placeholder="ban@example.com" required></label>
-      {% endif %}
       {% if page == "register" %}
       <label><span>Nhập lại mật khẩu</span><input id="registerConfirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label>
       {% endif %}
       <p id="authPageStatus" role="status" aria-live="polite"></p>
-      <button class="button primary" type="submit">{{ 'Gửi link đặt lại mật khẩu' if page == 'forgot-password' else title }}</button>
+      <button class="button primary" type="submit">{{ title }}</button>
     </form>
     <nav class="auth-links" aria-label="Tài khoản">
       {% if page != "login" %}<a href="/login">Đăng nhập</a>{% endif %}
       {% if page != "register" %}<a href="/register">Tạo tài khoản</a>{% endif %}
-      {% if page != "forgot-password" %}<a href="/forgot-password">Quên mật khẩu?</a>{% endif %}
     </nav>
   </main>
   <script src="/static/auth-api.js"></script>

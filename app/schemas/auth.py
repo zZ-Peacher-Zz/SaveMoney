@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, Field
 
 
 class Credentials(BaseModel):
@@ -7,9 +7,4 @@ class Credentials(BaseModel):
 
 
 class Registration(Credentials):
-    email: EmailStr | None = Field(default=None, max_length=254)
-
-    @field_validator("email")
-    @classmethod
-    def normalize_email(cls, value):
-        return str(value).lower() if value else None
+    pass

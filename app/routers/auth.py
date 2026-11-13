@@ -11,29 +11,21 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import LoginSession, User, UserAvatar
 from app.schemas.auth import Credentials, Registration
-from app.recovery import issue_link, limit_requests
 from app.security import COOKIE_NAME, current_user, hash_password, start_session
 
 router = APIRouter()
 
 
 @router.post("/api/auth/register", status_code=201)
-def register(payload: Registration, request: Request, response: Response, db: Session = Depends(get_db)):
+def register(payload: Registration, response: Response, db: Session = Depends(get_db)):
     username = payload.username.lower()
     if db.scalar(select(User).where(User.username == username)):
         raise HTTPException(status_code=409, detail="Username already exists")
-    if payload.email:
-        client = request.client.host if request.client else "unknown"
-        # Commit quotas with the account so delivery/configuration failures don't consume them.
-        limit_requests(db, f"registration-ip:{client}", 900, 5, commit=False)
-        limit_requests(db, f"registration-email:{payload.email}", 60, 1, commit=False)
     salt = secrets.token_hex(16)
     user = User(username=username, password_hash=salt + ":" + hash_password(payload.password, salt))
     db.add(user)
     try:
         db.flush()
-        if payload.email:
-            issue_link(db, user.id, str(payload.email), "verify")
         db.commit()
     except IntegrityError:
         db.rollback()

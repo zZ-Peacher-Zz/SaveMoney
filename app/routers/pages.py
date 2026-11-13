@@ -37,18 +37,3 @@ def login_page(request: Request):
 @router.get("/register", response_class=HTMLResponse)
 def register_page(request: Request):
     return templates.TemplateResponse("auth.html", {"request": request, "page": "register", "title": "Tạo tài khoản"})
-
-
-@router.get("/forgot-password", response_class=HTMLResponse)
-def forgot_password_page(request: Request):
-    return templates.TemplateResponse("auth.html", {"request": request, "page": "forgot-password", "title": "Quên mật khẩu"})
-
-
-@router.get("/reset-password", response_class=HTMLResponse)
-def reset_password_page(request: Request):
-    return templates.TemplateResponse("recovery.html", {"request": request, "verify": False})
-
-
-@router.get("/verify-email", response_class=HTMLResponse)
-def verify_email_page(request: Request):
-    return templates.TemplateResponse("recovery.html", {"request": request, "verify": True})

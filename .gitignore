@@ -10,3 +10,4 @@ expense_tracker.db
 !.env.example
 .idea/
 .vscode/
+*.log

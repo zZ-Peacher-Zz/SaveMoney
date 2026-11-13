@@ -1,7 +1,7 @@
 # SaveMoney - FastAPI + PostgreSQL
 
 A personal and family expense tracker with account login, avatars, monthly income,
-shared ledgers, group invitations, CSV export, and verified email password recovery.
+shared ledgers, group invitations, CSV export, and username/password authentication.
 
 ## Install
 
@@ -42,7 +42,7 @@ uvicorn main:app --reload
 ```
 
 Open http://127.0.0.1:8000. Signed-out visitors are redirected to `/login`.
-Separate account pages: `/register`, `/forgot-password`, `/reset-password`, `/verify-email`.
+Account pages: `/register` and `/login`.
 API documentation is at `/docs`.
 
 ## Render
@@ -55,9 +55,9 @@ Create a Python Web Service connected to this repository:
 
 Set `DATABASE_URL`, `APP_BASE_URL=https://your-app.onrender.com`, and
 `COOKIE_SECURE=1` in Environment. Remove an old `PYTHON_VERSION=3.14...` override;
-the repository selects Python 3.12. Set the email configuration below as well.
+the repository selects Python 3.12.
 
-Accounts, income, expenses, avatars, memberships, and recovery data are stored in
+Accounts, income, expenses, avatars, memberships, and account data are stored in
 PostgreSQL, so these records do not require a Render persistent disk.
 
 ## Existing data
@@ -66,24 +66,10 @@ Changing the database connection does not migrate existing records. The previous
 Atlas database and local SQLite files are left untouched. A new PostgreSQL database
 starts empty; arrange a separate data migration if old records must be retained.
 
-## Email recovery
+## Accounts
 
-Set `RESEND_API_KEY` and `EMAIL_FROM` for HTTPS mail delivery, and set `APP_BASE_URL`
-to the exact public app address. Render Free blocks common SMTP ports; use Resend
-there. On other hosts, SMTP is also supported with `SMTP_HOST`, `SMTP_PORT` (587
-STARTTLS or 465 TLS), `SMTP_USER`, and `SMTP_PASSWORD`.
-
-New UI accounts provide a recovery email. Existing users add one after login using
-**Email khoi phuc tai khoan** and their current password. Recovery requires verifying
-the address first. An email can belong to only one verified account.
-
-Links expire after 30 minutes, are stored only as hashes, and can be consumed once.
-Password reset revokes login sessions and outstanding recovery links atomically.
-Old email links are redirected to the dedicated recovery page. No link is printed to
-logs or returned as a fallback when mail delivery is not configured.
-
-`onboarding@resend.dev` is for testing to the email on your Resend account. Verify a
-domain and use its sender address before sending to other family members.
+Accounts use a username and password for registration and login. Email delivery
+and password recovery are not supported. No email provider configuration is required.
 
 ## Family ledgers
 
@@ -103,7 +89,7 @@ members sharing the selected group. Savings goals are not implemented yet.
 - [main.py](main.py): app startup, static files, router registration.
 - [app/database.py](app/database.py): PostgreSQL engine and request-scoped SQLAlchemy sessions.
 - [app/models/](app/models/): SQLAlchemy tables, relationships, and unique constraints.
-- [app/routers/](app/routers/): account, recovery, family, finance, and page endpoints.
+- [app/routers/](app/routers/): account, family, finance, and page endpoints.
 - [app/schemas/](app/schemas/): request validation with Pydantic.
 - [app/security.py](app/security.py): scrypt password hashes and HttpOnly session cookies.
 - [app/dependencies.py](app/dependencies.py): group permissions and ledger selection.
@@ -123,4 +109,4 @@ Functional tests use isolated SQLite databases. PostgreSQL configuration and DDL
 compilation are also checked. For real PostgreSQL transaction tests, set
 `POSTGRES_TEST_URL` to a test database URL. These opt-in tests create and remove a
 random temporary schema and require schema creation permissions. They do not
-modify application tables. Without that variable, the two integration tests skip.
+modify application tables. Without that variable, the integration test skips.
