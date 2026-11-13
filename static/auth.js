@@ -32,6 +32,6 @@ document.querySelectorAll("[data-password-target]").forEach(button => {
     const visible = input.type === "password";
     input.type = visible ? "text" : "password";
     button.setAttribute("aria-pressed", String(visible));
-    button.setAttribute("aria-label", visible ? "\u1ea8n m\u1eadt kh\u1ea9u" : "Hi\u1ec7n m\u1eadt kh\u1ea9u");
+    button.setAttribute("aria-label", `${visible ? "\u1ea8n" : "Hi\u1ec7n"} ${button.dataset.passwordLabel}`);
   });
 });

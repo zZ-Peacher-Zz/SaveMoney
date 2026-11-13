@@ -189,7 +189,7 @@ async function loadAll() {
     renderSummary(summary);
     renderBreakdown(summary);
     updateHistory(expenses);
-    incomeInput.value = summary.my_income || "";
+    MoneyInput.set(incomeInput, summary.my_income || "");
     document.getElementById("exportBtn").href = ledgerUrl(`/api/months/${month}/export.csv`);
     setDashboardLoading(false);
   } catch (error) {
@@ -303,7 +303,7 @@ async function editExpense(id, items) {
   editingId = id;
   dateInput.value = item.expense_date;
   categoryInput.value = item.category;
-  amountInput.value = item.amount;
+  MoneyInput.set(amountInput, item.amount);
   noteInput.value = item.note || "";
 
   document.getElementById("formTitle").textContent = "Sửa khoản chi";
@@ -332,7 +332,7 @@ document.getElementById("saveIncomeBtn").addEventListener("click", async () => {
     await api(`/api/months/${monthPicker.value}/income`, {
       method: "PUT",
       body: JSON.stringify({
-        amount: Number(incomeInput.value || 0)
+        amount: MoneyInput.parse(incomeInput)
       })
     });
 
@@ -356,7 +356,7 @@ expenseForm.addEventListener("submit", async event => {
   const payload = {
     expense_date: dateInput.value,
     category: categoryInput.value,
-    amount: Number(amountInput.value),
+    amount: MoneyInput.parse(amountInput),
     note: noteInput.value.trim() || null
   };
 

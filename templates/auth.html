@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ title }} · Heo &#272;&#7845;t</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20261113-errors-1">
+  <link rel="stylesheet" href="/static/styles.css?v=20261113-floating-chat-1">
 </head>
-<body>
+<body class="auth-page">
   {% include "christmas_effects.html" %}
   <main class="panel auth-panel">
     {% include "brand.html" %}
@@ -18,9 +18,9 @@
     {% endif %}
     <form id="authPageForm" data-page="{{ page }}">
       <label><span>Tên đăng nhập</span><input id="usernameInput" autocomplete="username" minlength="3" maxlength="50" pattern="[a-zA-Z0-9_.\-]+" required></label>
-      <div class="password-field"><label for="passwordInput">Mật khẩu</label><div class="password-control"><input id="passwordInput" type="password" autocomplete="{{ 'new-password' if page == 'register' else 'current-password' }}" minlength="8" maxlength="128" required><button class="password-toggle" type="button" data-password-target="passwordInput" aria-controls="passwordInput" aria-label="Hi&#7879;n m&#7853;t kh&#7849;u" aria-pressed="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="M3 3l18 18"/></svg></button></div></div>
+      <div class="password-field"><label for="passwordInput">Mật khẩu</label><div class="password-control"><input id="passwordInput" type="password" autocomplete="{{ 'new-password' if page == 'register' else 'current-password' }}" minlength="8" maxlength="128" required><button class="password-toggle" type="button" data-password-label="m&#7853;t kh&#7849;u" data-password-target="passwordInput" aria-controls="passwordInput" aria-label="Hi&#7879;n m&#7853;t kh&#7849;u" aria-pressed="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="M3 3l18 18"/></svg></button></div></div>
       {% if page == "register" %}
-      <div class="password-field"><label for="registerConfirmPassword">Nhập lại mật khẩu</label><div class="password-control"><input id="registerConfirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required><button class="password-toggle" type="button" data-password-target="registerConfirmPassword" aria-controls="registerConfirmPassword" aria-label="Hi&#7879;n m&#7853;t kh&#7849;u" aria-pressed="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="M3 3l18 18"/></svg></button></div></div>
+      <div class="password-field"><label for="registerConfirmPassword">Nhập lại mật khẩu</label><div class="password-control"><input id="registerConfirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required><button class="password-toggle" type="button" data-password-label="m&#7853;t kh&#7849;u nh&#7853;p l&#7841;i" data-password-target="registerConfirmPassword" aria-controls="registerConfirmPassword" aria-label="Hi&#7879;n m&#7853;t kh&#7849;u nh&#7853;p l&#7841;i" aria-pressed="false"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="M3 3l18 18"/></svg></button></div></div>
       {% endif %}
       <p id="authPageStatus" role="status" aria-live="polite"></p>
       <button class="button primary" type="submit">{{ title }}</button>
@@ -29,10 +29,10 @@
       {% if page != "login" %}<a href="/login">Đăng nhập</a>{% endif %}
       {% if page != "register" %}<a href="/register">Tạo tài khoản</a>{% endif %}
     </nav>
+    {% include "music_player.html" %}
   </main>
   <script src="/static/field-errors.js?v=1"></script>
   <script src="/static/auth-api.js?v=2"></script>
-  <script src="/static/auth.js?v=20261113-errors-1"></script>
-  {% include "music_player.html" %}
+  <script src="/static/auth.js?v=20261113-floating-chat-1"></script>
 </body>
 </html>

@@ -1,5 +1,14 @@
 (() => {
   const panel = document.getElementById("familyChat");
+  const launcher = document.getElementById("familyChatLauncher");
+  function closeChat() {panel.close();launcher.setAttribute("aria-expanded","false");}
+  launcher.addEventListener("click",()=>{
+    if(panel.open){closeChat();return;}
+    panel.show();launcher.setAttribute("aria-expanded","true");
+    input.focus();log.scrollTop=log.scrollHeight;
+  });
+  document.getElementById("closeFamilyChat").addEventListener("click",()=>{closeChat();launcher.focus();});
+  panel.addEventListener("keydown",event=>{if(event.key==="Escape"){event.preventDefault();closeChat();launcher.focus();}});
   const log = document.getElementById("chatMessages");
   const form = document.getElementById("chatForm");
   const input = document.getElementById("chatInput");
@@ -43,7 +52,7 @@
     if (token!==generation) return;
     status.textContent=error.message;
     if (error.code===404||error.code===401) {
-      messages.clear();log.replaceChildren();input.disabled=true;send.disabled=true;older.classList.add("hidden");group=null;
+      messages.clear();log.replaceChildren();input.disabled=true;send.disabled=true;older.classList.add("hidden");group=null;launcher.disabled=true;
     }
   }
   async function poll() {
@@ -66,7 +75,10 @@
     if (group?.id===next?.id) return;
     if (group) drafts.set(group.id,input.value);
     generation++;group=next;messages=new Map();receivedId=0;loaded=false;polling=false;sending=false;
-    panel.classList.toggle("hidden",!group);log.replaceChildren();status.textContent="";
+    closeChat();launcher.disabled=!group;
+    launcher.setAttribute("aria-label",group?"M\u1edf chat gia \u0111\u00ecnh":"Ch\u1ecdn s\u1ed5 gia \u0111\u00ecnh \u0111\u1ec3 chat");
+    launcher.title=group?group.name:"Ch\u1ecdn s\u1ed5 gia \u0111\u00ecnh \u0111\u1ec3 chat";
+    log.replaceChildren();status.textContent="";
     input.disabled=false;input.readOnly=false;send.disabled=false;older.disabled=false;older.classList.add("hidden");
     input.value=group?(drafts.get(group.id)||""):"";
     if (!group) return;

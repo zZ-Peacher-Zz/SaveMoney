@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Heo &#272;&#7845;t - Thu chi gia &#273;&#236;nh</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20261113-errors-1">
+  <link rel="stylesheet" href="/static/styles.css?v=20261113-floating-chat-1">
 </head>
 <body>
   {% include "christmas_effects.html" %}
@@ -60,20 +60,7 @@
       </div>
       <label class="month-label"><span>Đang xem và ghi thu chi vào</span><select id="ledgerPicker"><option value="">Cá nhân</option></select></label>
       <p id="ledgerHint">Chỉ bạn xem được sổ cá nhân.</p>
-      <details>
-        <summary>Quản lý gia đình</summary>
-        <form id="createGroupForm" class="family-form">
-          <label><span>Tên gia đình mới</span><input id="groupNameInput" maxlength="80" required placeholder="Ví dụ: Gia đình mình"></label>
-          <button class="button secondary" type="submit">Tạo nhóm</button>
-        </form>
-        <div id="groupDetails" class="hidden">
-          <h3>Thành viên</h3><div id="memberList"></div>
-          <form id="inviteForm" class="family-form hidden">
-            <label><span>Mời bằng tên đăng nhập đã có tài khoản</span><input id="inviteUsernameInput" minlength="3" maxlength="50" required autocomplete="off"></label>
-            <button class="button secondary" type="submit">Gửi lời mời</button>
-          </form>
-        </div>
-      </details>
+      <button id="openFamilyManager" type="button" class="button secondary" aria-haspopup="dialog" aria-controls="familyManager">Qu&#7843;n l&#253; gia &#273;&#236;nh</button>
       <div id="invitations" aria-live="polite"></div>
     </section>
 
@@ -118,7 +105,7 @@
 
           <p id="incomeHint" class="hidden">Nhập phần thu nhập bạn góp vào gia đình trong tháng. Tổng thu nhập ở trên gồm tất cả thành viên.</p>
           <div class="input-row">
-            <input id="incomeInput" type="number" min="0" step="1000" placeholder="Ví dụ 20.000.000">
+            <input id="incomeInput" type="text" inputmode="numeric" data-money-input data-min-amount="0" placeholder="Ví dụ 20.000.000">
             <button id="saveIncomeBtn" class="button secondary">Lưu</button>
           </div>
         </section>
@@ -154,7 +141,7 @@
 
             <label>
               <span>Số tiền</span>
-              <input id="amountInput" type="number" min="1" step="1" placeholder="Ví dụ 120.000" required>
+              <input id="amountInput" type="text" inputmode="numeric" data-money-input data-min-amount="1" placeholder="Ví dụ 120.000" required>
             </label>
 
             <label>
@@ -171,20 +158,7 @@
       </aside>
 
       <section class="right-column">
-        <section id="familyChat" class="panel chat-panel hidden" aria-labelledby="chatTitle">
-          <details open>
-            <summary class="chat-heading"><span class="chat-icon" aria-hidden="true">&#9993;</span><span><span class="overline">FAMILY CHAT</span><strong id="chatTitle">G&#243;c tr&#242; chuy&#7879;n</strong></span></summary>
-            <p id="chatGroupName" class="chat-subtitle"></p>
-            <button id="chatOlder" type="button" class="button ghost compact hidden">Tin nh&#7855;n c&#361; h&#417;n</button>
-            <div id="chatMessages" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions" aria-label="Tin nh&#7855;n gia &#273;&#236;nh" tabindex="0"></div>
-            <p id="chatStatus" role="status" class="chat-status"></p>
-            <form id="chatForm">
-              <label for="chatInput">L&#7901;i nh&#7855;n cho gia &#273;&#236;nh</label>
-              <textarea id="chatInput" maxlength="2000" rows="2" required placeholder="H&#244;m nay nh&#224; m&#236;nh c&#243; g&#236; vui?"></textarea>
-              <div class="chat-compose-actions"><small>T&#7889;i &#273;a 2.000 k&#253; t&#7921;</small><button id="chatSend" class="button primary" type="submit">G&#7917;i tin &#8599;</button></div>
-            </form>
-          </details>
-        </section>
+
 
         <section class="panel">
           <div class="panel-title split">
@@ -246,6 +220,23 @@
     </main>
   </div>
 
+  <dialog id="familyManager" class="family-dialog" aria-labelledby="familyManagerTitle">
+    <header class="family-dialog-header"><h2 id="familyManagerTitle">Qu&#7843;n l&#253; gia &#273;&#236;nh</h2><button id="closeFamilyManager" type="button" class="button ghost">&#272;&#243;ng</button></header>
+    <div class="family-dialog-content">
+        <form id="createGroupForm" class="family-form">
+          <label><span>Tên gia đình mới</span><input id="groupNameInput" maxlength="80" required placeholder="Ví dụ: Gia đình mình"></label>
+          <button class="button secondary" type="submit">Tạo nhóm</button>
+        </form>
+        <div id="groupDetails" class="hidden">
+          <h3>Thành viên</h3><div id="memberList"></div>
+          <form id="inviteForm" class="family-form hidden">
+            <label><span>Mời bằng tên đăng nhập đã có tài khoản</span><input id="inviteUsernameInput" minlength="3" maxlength="50" required autocomplete="off"></label>
+            <button class="button secondary" type="submit">Gửi lời mời</button>
+          </form>
+        </div>
+    </div>
+  </dialog>
+
   <dialog id="avatarDialog" class="avatar-dialog" aria-labelledby="avatarDialogTitle" aria-describedby="avatarDialogHint">
     <h2 id="avatarDialogTitle">Chỉnh ảnh đại diện</h2>
     <p id="avatarDialogHint">Kéo ảnh trong khung tròn để căn chỉnh. Bạn cũng có thể dùng các phím mũi tên.</p>
@@ -256,11 +247,26 @@
       <button id="saveAvatarCrop" type="button" class="button primary">Lưu ảnh đại diện</button>
     </div>
   </dialog>
+        <dialog id="familyChat" class="panel chat-panel" aria-labelledby="chatTitle">
+            <div class="floating-chat-header"><span class="chat-icon" aria-hidden="true">&#9993;</span><h2 id="chatTitle">Chat gia &#273;&#236;nh</h2><button id="closeFamilyChat" class="chat-close" type="button" aria-label="&#272;&#243;ng chat gia &#273;&#236;nh">&#215;</button></div>
+            <p id="chatGroupName" class="chat-subtitle"></p>
+            <button id="chatOlder" type="button" class="button ghost compact hidden">Tin nh&#7855;n c&#361; h&#417;n</button>
+            <div id="chatMessages" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions" aria-label="Tin nh&#7855;n gia &#273;&#236;nh" tabindex="0"></div>
+            <p id="chatStatus" role="status" class="chat-status"></p>
+            <form id="chatForm">
+              <label for="chatInput">L&#7901;i nh&#7855;n cho gia &#273;&#236;nh</label>
+              <textarea id="chatInput" maxlength="2000" rows="2" required placeholder="H&#244;m nay nh&#224; m&#236;nh c&#243; g&#236; vui?"></textarea>
+              <div class="chat-compose-actions"><small>T&#7889;i &#273;a 2.000 k&#253; t&#7921;</small><button id="chatSend" class="button primary" type="submit">G&#7917;i tin &#8599;</button></div>
+            </form>
+        </dialog>
+  <button id="familyChatLauncher" class="chat-launcher" type="button" aria-label="Ch&#7885;n s&#7893; gia &#273;&#236;nh &#273;&#7875; chat" aria-haspopup="dialog" aria-controls="familyChat" aria-expanded="false" disabled><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-3 2V11.5A8.5 8.5 0 0 1 9.5 3h3a8.5 8.5 0 0 1 8.5 8.5Z"/><path d="M6 11h2m3 0h2m3 0h2"/></svg></button>
   <div id="toast" class="toast hidden"></div>
-  <script src="/static/field-errors.js?v=1"></script>
+  <script src="/static/field-errors.js?v=2"></script>
+  <script src="/static/family-dialog.js?v=1"></script>
+  <script src="/static/money-input.js?v=1"></script>
   <script src="/static/avatar-crop.js"></script>
-  <script src="/static/app.js?v=20261113-errors-1"></script>
-  <script src="/static/family-chat.js?v=2"></script>
+  <script src="/static/app.js?v=20261113-money-1"></script>
+  <script src="/static/family-chat.js?v=3"></script>
   {% include "music_player.html" %}
 </body>
 </html>

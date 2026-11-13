@@ -17,6 +17,7 @@ window.FieldErrors = (() => {
   function set(input,message){if(!input)return;slot(input).textContent=message;input.setAttribute("aria-invalid","true");}
   function validation(input){
     const v=input.validity;
+    if(v.customError)return input.validationMessage;
     if(v.valueMissing)return "Vui l\u00f2ng nh\u1eadp th\u00f4ng tin n\u00e0y.";
     if(v.tooShort)return `C\u1ea7n \u00edt nh\u1ea5t ${input.minLength} k\u00fd t\u1ef1.`;
     if(v.tooLong)return `T\u1ed1i \u0111a ${input.maxLength} k\u00fd t\u1ef1.`;
