@@ -94,7 +94,7 @@ textarea {
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
   margin-bottom: 16px;
 }
@@ -144,7 +144,7 @@ textarea {
 
 .layout {
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: 340px minmax(0, 1fr);
   gap: 18px;
   align-items: start;
 }
@@ -183,7 +183,7 @@ textarea {
 
 .input-row {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
 }
 
@@ -339,6 +339,8 @@ form label > span {
 
 .table-wrap {
   overflow: auto;
+  max-width: 100%;
+  overscroll-behavior-x: contain;
 }
 
 table {
@@ -411,7 +413,7 @@ th {
 .negative { color: var(--danger); }
 
 @media (max-width: 920px) {
-  .metrics { grid-template-columns: repeat(2, 1fr); }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .layout { grid-template-columns: 1fr; }
 }
 
@@ -419,9 +421,10 @@ th {
   .shell { padding: 22px 12px 44px; }
   .header { flex-direction: column; align-items: stretch; }
   .month-label input { min-width: 0; }
-  .metrics { grid-template-columns: 1fr; }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .panel-title.split { flex-direction: column; }
-  .bar-row { grid-template-columns: 90px 1fr 94px; gap: 8px; }
+  .bar-row { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+  .bar-track { grid-column: 1 / -1; grid-row: 2; }
 }
 
 .auth-panel { max-width: 440px; margin: 10vh auto; }
@@ -473,3 +476,60 @@ th {
 .day-heading th { background: var(--primary-soft); color: var(--text); border-top: 1px solid var(--line); }
 .day-summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 13px; }
 .day-summary small { color: var(--muted); font-weight: 500; }
+
+/* Allow grid and flex children to shrink around long content and scrollable tables. */
+.header > *, .layout > *, .left-column, .right-column, .panel,
+.metric-card, .panel-title > *, form label, .input-row > * { min-width: 0; }
+input, select, textarea { min-width: 0; max-width: 100%; }
+.metric-card strong { overflow-wrap: anywhere; }
+.family-panel p, .invitation-row > span, .day-summary { overflow-wrap: anywhere; }
+.button, .icon-button { min-height: 44px; }
+.form-actions { flex-wrap: wrap; }
+.table-wrap:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+td { overflow-wrap: anywhere; }
+td.amount { white-space: nowrap; }
+
+@media (max-width: 920px) {
+  .header { align-items: flex-start; }
+  .header-actions { flex: 0 0 250px; }
+}
+
+@media (max-width: 580px) {
+  .shell { padding-top: 20px; }
+  .header { gap: 18px; }
+  .header-actions { flex: auto; width: 100%; }
+  .account-actions { justify-content: flex-start; }
+  .account-actions strong { flex: 1; }
+  .avatar-controls { justify-content: flex-start; flex-wrap: wrap; }
+  .avatar-help { text-align: left; }
+  .panel { padding: 16px; border-radius: 16px; }
+  .metrics { gap: 10px; }
+  .metric-card { padding: 14px; border-radius: 14px; }
+  .metric-card strong { font-size: clamp(18px, 5vw, 25px); line-height: 1.25; }
+  .metric-card span { margin-bottom: 8px; }
+  .metric-card small { line-height: 1.5; }
+  input, select, textarea { font-size: 16px; }
+  .family-form { flex-direction: column; align-items: stretch; }
+  .family-form label { flex: auto; min-width: 0; width: 100%; }
+  .family-form .button { width: 100%; }
+  .panel-title.split > .button, .panel-title.split > .toolbar { width: 100%; }
+  .toolbar .button { flex: 1; }
+  .invitation-row { align-items: stretch; }
+  .invitation-row > span, .invitation-row .toolbar { width: 100%; }
+  .member-row { padding: 12px; }
+  .member-identity { flex-basis: 100%; }
+  .member-row > .button { width: 100%; }
+  .bar-value { overflow-wrap: anywhere; }
+  .day-summary { flex-wrap: wrap; }
+  .toast { left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); max-width: none; }
+  .auth-panel { margin: 24px auto; }
+  .auth-panel h1 { font-size: 28px; }
+  .auth-links a { display: inline-flex; align-items: center; min-height: 44px; }
+  .avatar-dialog { padding: 18px; }
+}
+
+@media (max-width: 359px) {
+  .metrics { grid-template-columns: minmax(0, 1fr); }
+  .input-row { grid-template-columns: minmax(0, 1fr); }
+  .form-actions { flex-direction: column; }
+}
