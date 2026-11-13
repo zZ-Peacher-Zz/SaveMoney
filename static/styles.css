@@ -733,3 +733,92 @@ details[open] > .chat-heading::after { content: "\2212"; }
 .chat-compose-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .chat-compose-actions small { color: #637089; font-size: 11px; }
 @media (max-width: 580px) { .panel { border-radius: 22px; } .metric-card { border-radius: 20px; } .chat-messages { height: 280px; padding: 10px; } .chat-bubble { max-width: 95%; } }
+
+/* Compact masthead and the first desktop view: family left, four metrics right. */
+.header { align-items: center; gap: 20px; margin-bottom: 22px; }
+.header h1 { font-size: clamp(28px, 3vw, 36px); margin: 5px 0 0; }
+.header-actions { display: flex; flex: initial; align-items: center; gap: 16px; flex-wrap: wrap; }
+.header-month { order: -1; }
+.header-month input { min-width: 170px; }
+.account-actions { gap: 10px; }
+.account-actions strong { max-width: 150px; }
+.profile-options { position: relative; font-size: 12px; color: #d0e8e4; }
+.profile-options > summary { cursor: pointer; padding: 12px 0; }
+.profile-menu { position: absolute; right: 0; top: 100%; z-index: 12; width: 230px; padding: 16px; border: 1px solid #dce2ee; border-radius: 16px; background: #fff; box-shadow: 0 8px 24px #07132433; }
+.header .profile-menu .avatar-label { color: #6355dc; }
+.header .profile-menu .avatar-help { display: block; color: #66738a; margin-top: 10px; }
+.overview-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; margin-bottom: 22px; align-items: start; }
+.overview-grid > * { min-width: 0; margin-bottom: 0; }
+.overview-grid .metrics { margin-bottom: 0; }
+@media (min-width: 921px) {
+  .shell { padding-top: 32px; }
+  .header { min-height: 70px; }
+  .overview-grid { grid-template-columns: minmax(300px, .9fr) minmax(0, 1.4fr); }
+  .overview-grid .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .overview-grid .metric-card { min-height: 128px; padding: 18px 20px; }
+  .overview-grid .metric-card strong { font-size: clamp(23px, 2.2vw, 30px); }
+  .overview-grid .family-panel { padding: 20px; }
+  .overview-grid .panel-title.split { align-items: center; gap: 8px; }
+  .overview-grid #refreshGroupsBtn { max-width: 160px; font-size: 11px; padding: 8px 10px; }
+  .overview-grid .family-form { flex-direction: column; align-items: stretch; }
+  .overview-grid .family-form label { min-width: 0; flex: auto; }
+  .skeleton-family { min-height: 272px; }
+}
+@media (max-width: 920px) {
+  .header { flex-wrap: wrap; }
+  .header-actions { width: auto; flex: 1; justify-content: flex-end; }
+}
+@media (max-width: 580px) {
+  .header { align-items: stretch; gap: 14px; }
+  .header-actions { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+  .header-month { grid-column: 1 / -1; order: 0; }
+  .header-month input { min-width: 0; }
+  .account-actions strong { max-width: none; }
+  .account-actions .button { padding: 10px; font-size: 12px; }
+  .profile-options { align-self: center; }
+  .profile-menu { width: min(230px, calc(100vw - 32px)); }
+}
+
+.brand { display: inline-flex; align-items: center; gap: 10px; min-width: 0; text-decoration: none; color: #f7f2ff; }
+.brand-logo { display: block; width: 52px; height: 52px; flex-shrink: 0; }
+.brand-copy { display: grid; gap: 3px; }
+.brand-copy strong { font-size: 28px; font-weight: 850; line-height: 1.15; letter-spacing: -.04em; white-space: nowrap; }
+.brand-copy small { font-size: 11px; color: #cbd6eb; }
+.auth-panel > .brand { margin-bottom: 14px; color: #554198; }
+.auth-panel .brand-copy small { color: #6d7189; }
+.profile-menu #currentUser { display: block; color: #34405b; overflow-wrap: anywhere; margin-bottom: 12px; }
+.profile-menu #logoutBtn { width: 100%; margin-bottom: 16px; }
+.account-actions { flex-shrink: 0; }
+.music-player { display: block; width: auto; padding: 0; border-radius: 16px; }
+.music-player > summary { display: flex; gap: 8px; align-items: center; min-height: 44px; padding: 10px 14px; cursor: pointer; list-style: none; font-size: 12px; font-weight: 700; color: #effff7; }
+.music-player > summary::-webkit-details-marker { display: none; }
+.music-player > summary > span:first-child { color: #9ae6ce; font-size: 22px; line-height: 1; }
+.music-indicator { width: 7px; height: 7px; border-radius: 50%; background: #759199; }
+.music-player:has(#musicToggle[aria-pressed="true"]) .music-indicator { background: #96edb6; box-shadow: 0 0 8px #96edb680; }
+.music-controls { display: grid; grid-template-columns: minmax(0, 1fr) 76px; gap: 10px; width: 290px; max-width: calc(100vw - 26px); padding: 0 12px 12px; }
+.music-controls .music-track { grid-column: 1 / -1; max-width: none; }
+.music-controls .music-volume { width: 76px; }
+.shell { padding-bottom: 100px; }
+.auth-panel { margin-bottom: 100px; }
+@media (max-width: 920px) {
+  .header { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; }
+  .header-actions { display: contents; }
+  .header > .brand { grid-column: 1; grid-row: 1; }
+  .header .account-actions { grid-column: 2; grid-row: 1; }
+  .header .profile-options { grid-column: 3; grid-row: 1; }
+  .header .header-month { grid-column: 1 / -1; grid-row: 2; display: flex; align-items: center; gap: 10px; }
+  .header-month input { min-width: 0; width: auto; flex: 1; padding: 9px 12px; }
+  .header-month > span { flex-shrink: 0; }
+  .profile-options > summary { font-size: 11px; }
+  .brand-copy strong { font-size: 24px; }
+  .brand-logo { width: 46px; height: 46px; }
+  .shell { padding-top: 24px; }
+}
+@media (max-width: 380px) {
+  .header { column-gap: 7px; }
+  .brand { gap: 6px; }
+  .brand-copy strong { font-size: 22px; }
+  .brand-copy small { font-size: 9px; }
+  .brand-logo { width: 40px; height: 40px; }
+  .header .avatar-button { width: 40px; height: 40px; }
+}

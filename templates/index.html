@@ -3,34 +3,37 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Chi tiêu tháng</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20261113-gilroy-1">
+  <title>Heo &#272;&#7845;t - Thu chi gia &#273;&#236;nh</title>
+  <link rel="stylesheet" href="/static/styles.css?v=20261113-heodat-1">
 </head>
 <body>
   {% include "christmas_effects.html" %}
   <div id="dashboard" class="shell is-loading" aria-busy="true">
     <header class="header">
-      <div>
-        <div class="eyebrow">PERSONAL FINANCE</div>
-        <h1>Chi tiêu tháng</h1>
-        <p>Theo dõi dòng tiền rõ ràng, gọn gàng và có dữ liệu lưu bằng Python backend.</p>
-      </div>
+      {% include "brand.html" %}
+      <h1 class="sr-only">Heo &#272;&#7845;t - Thu chi gia &#273;&#236;nh</h1>
       <div class="header-actions">
         <div class="account-actions">
           <button id="avatarBtn" type="button" class="avatar-button" aria-label="Thay đổi ảnh đại diện" title="Thay đổi ảnh đại diện">
             <img id="avatarImage" class="hidden" alt="Ảnh đại diện">
             <span id="avatarInitial" aria-hidden="true"></span>
           </button>
+        </div>
+        <details class="profile-options">
+          <summary>T&#224;i kho&#7843;n</summary>
+          <div class="profile-menu">
           <strong id="currentUser"></strong>
           <button id="logoutBtn" class="button logout-button" type="button">Đăng xuất</button>
-        </div>
+
         <div class="avatar-controls">
           <label for="avatarInput" class="avatar-label">Đổi ảnh đại diện</label>
           <input id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden">
           <button id="removeAvatarBtn" type="button" class="icon-button hidden">Xóa ảnh</button>
         </div>
         <small class="avatar-help">PNG, JPG, WebP · tối đa 5 MB</small>
-        <label class="month-label">
+          </div>
+        </details>
+        <label class="month-label header-month">
           <span>Tháng</span>
           <input id="monthPicker" type="month">
         </label>
@@ -38,8 +41,10 @@
     </header>
 
     <section id="loadingSkeleton" class="loading-skeleton" aria-hidden="true">
+      <div class="overview-grid">
       <div class="panel skeleton-family"><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
       <div class="metrics">{% for i in range(4) %}<div class="metric-card"><div class="skeleton-line short"></div><div class="skeleton-line number"></div><div class="skeleton-line short"></div></div>{% endfor %}</div>
+      </div>
       <div class="layout">
         <div class="panel">{% for i in range(5) %}<div class="skeleton-line short"></div><div class="skeleton-line field"></div>{% endfor %}</div>
         <div class="right-column"><div class="panel">{% for i in range(4) %}<div class="skeleton-line"></div>{% endfor %}</div><div class="panel">{% for i in range(6) %}<div class="skeleton-line field"></div>{% endfor %}</div></div>
@@ -47,6 +52,7 @@
     </section>
     <div id="dashboardLoadStatus" role="status" aria-live="polite"><span id="dashboardLoadMessage" class="sr-only">&#272;ang t&#7843;i d&#7919; li&#7879;u...</span><button id="retryDashboard" class="button secondary hidden" type="button">Th&#7917; l&#7841;i</button></div>
 
+    <div class="overview-grid">
     <section class="panel family-panel">
       <div class="panel-title split">
         <div><span class="overline">FAMILY</span><h2>Sổ thu chi</h2></div>
@@ -93,6 +99,8 @@
         <small>Phần còn lại / thu nhập</small>
       </article>
     </section>
+
+    </div>
 
     <section id="budgetAlert" class="alert hidden">
       Chi tiêu tháng này đã vượt thu nhập.
