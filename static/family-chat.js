@@ -89,14 +89,17 @@
   });
   form.addEventListener("submit",async event=>{
     event.preventDefault();
-    const content=input.value.trim();if(!group||sending||!content)return;
+    if (!FieldErrors.validate(form)) return;
+    FieldErrors.clear(input);
+    const content=input.value.trim();if(!group||sending)return;
+    if(!content){FieldErrors.set(input,"Tin nh\u1eafn kh\u00f4ng \u0111\u01b0\u1ee3c \u0111\u1ec3 tr\u1ed1ng.");input.focus();return;}
     const token=generation,id=group.id;
     sending=true;send.disabled=true;input.readOnly=true;status.textContent="\u0110ang g\u1eedi...";
     try {
       const message=await request(endpoint(id),{method:"POST",body:JSON.stringify({content})});
       if(token!==generation)return;
       merge([message],true);input.value="";drafts.delete(id);status.textContent="\u0110\u00e3 g\u1eedi.";
-    } catch(error){handleError(error,token);}
+    } catch(error){if(token===generation)FieldErrors.set(input,error.message);handleError(error,token);}
     finally {if(token===generation){sending=false;input.readOnly=false;send.disabled=!group;}}
   });
   setInterval(poll,3000);

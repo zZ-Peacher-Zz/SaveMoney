@@ -822,3 +822,9 @@ details[open] > .chat-heading::after { content: "\2212"; }
   .brand-logo { width: 40px; height: 40px; }
   .header .avatar-button { width: 40px; height: 40px; }
 }
+
+.field-error { display: block; color: #b52645; font-size: 12px; font-weight: 500; line-height: 1.5; overflow-wrap: anywhere; margin-top: 5px; }
+.field-error:empty { display: none; }
+input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: #d54260; background-color: #fff8fa; }
+input[aria-invalid="true"]:focus, select[aria-invalid="true"]:focus, textarea[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px #fce0e7; }
+.field-control { min-width: 0; }

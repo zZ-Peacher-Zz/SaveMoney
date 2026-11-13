@@ -126,13 +126,18 @@ async function api(url, options = {}) {
 
   if (!response.ok) {
     let message = "Có lỗi xảy ra";
+    let details;
     try {
       const data = await response.json();
       message = data.detail || message;
+      details = data.detail;
     } catch (_) {}
     if (response.status === 401) showAuth();
     if (Array.isArray(message)) message = message.map(item => item.msg).join("; ");
-    throw new Error(message);
+    const error = new Error(message);
+    error.details = details;
+    error.status = response.status;
+    throw error;
   }
 
   if (response.status === 204) return null;
@@ -322,6 +327,7 @@ async function deleteExpense(id) {
 }
 
 document.getElementById("saveIncomeBtn").addEventListener("click", async () => {
+  if (!FieldErrors.validate(incomeInput)) return;
   try {
     await api(`/api/months/${monthPicker.value}/income`, {
       method: "PUT",
@@ -333,15 +339,17 @@ document.getElementById("saveIncomeBtn").addEventListener("click", async () => {
     await loadAll();
     showToast("Đã cập nhật thu nhập");
   } catch (error) {
-    showToast(error.message);
+    FieldErrors.report(error, {amount:incomeInput}, incomeInput);
   }
 });
 
 expenseForm.addEventListener("submit", async event => {
   event.preventDefault();
+  if (!FieldErrors.validate(expenseForm)) return;
 
   if (!dateInput.value.startsWith(monthPicker.value)) {
-    showToast("Ngày chi tiêu phải thuộc tháng đang chọn");
+    FieldErrors.set(dateInput, "Ng\u00e0y chi ti\u00eau ph\u1ea3i thu\u1ed9c th\u00e1ng \u0111ang ch\u1ecdn.");
+    dateInput.focus();
     return;
   }
 
@@ -370,7 +378,7 @@ expenseForm.addEventListener("submit", async event => {
     resetForm();
     await loadAll();
   } catch (error) {
-    showToast(error.message);
+    FieldErrors.report(error, {expense_date:dateInput,category:categoryInput,amount:amountInput,note:noteInput}, amountInput);
   }
 });
 
@@ -557,6 +565,7 @@ ledgerPicker.addEventListener("change", async () => {
 
 document.getElementById("createGroupForm").addEventListener("submit", async event => {
   event.preventDefault();
+  if (!FieldErrors.validate(event.target)) return;
   const button = event.submitter;
   button.disabled = true;
   try {
@@ -567,12 +576,13 @@ document.getElementById("createGroupForm").addEventListener("submit", async even
     await Promise.all([renderGroupDetails(), loadAll()]);
     event.target.reset();
     showToast("Đã tạo nhóm gia đình");
-  } catch (error) { showToast(error.message); }
+  } catch (error) { FieldErrors.report(error, {name:document.getElementById("groupNameInput")}, document.getElementById("groupNameInput")); }
   finally { button.disabled = false; }
 });
 
 document.getElementById("inviteForm").addEventListener("submit", async event => {
   event.preventDefault();
+  if (!FieldErrors.validate(event.target)) return;
   const group = selectedGroup();
   if (!group) return;
   const button = event.submitter;
@@ -581,7 +591,7 @@ document.getElementById("inviteForm").addEventListener("submit", async event => 
     await api(`/api/groups/${group.id}/invitations`, {method: "POST", body: JSON.stringify({username: document.getElementById("inviteUsernameInput").value.trim()})});
     event.target.reset();
     showToast("Đã gửi lời mời. Người nhận đăng nhập để chấp nhận.");
-  } catch (error) { showToast(error.message); }
+  } catch (error) { FieldErrors.report(error, {username:document.getElementById("inviteUsernameInput")}, document.getElementById("inviteUsernameInput")); }
   finally { button.disabled = false; }
 });
 
