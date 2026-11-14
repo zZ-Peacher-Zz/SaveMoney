@@ -14,6 +14,8 @@ const toast = document.getElementById("toast");
 
 let editingId = null;
 let familyGroups = [];
+let ledgerStorageKey = "";
+let preferredLedger = "";
 const ledgerPicker = document.getElementById("ledgerPicker");
 let loadVersion = 0;
 let historyItems = [];
@@ -320,8 +322,8 @@ function renderExpenses(items) {
       <td class="amount" data-label="S\u1ed1 ti\u1ec1n">${money(item.amount)}</td>
       <td data-label="Thao t\u00e1c">
         <div class="row-actions">
-          ${item.can_edit ? `<button type="button" class="icon-button history-icon edit" data-action="edit" data-id="${item.id}" aria-label="S&#7917;a kho&#7843;n chi" title="S&#7917;a kho&#7843;n chi"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5-12 12-6 1 1-6L16 3Z"/><path d="m14 5 5 5"/></svg></button>
-          <button type="button" class="icon-button history-icon delete" data-action="delete" data-id="${item.id}" aria-label="X&#243;a kho&#7843;n chi" title="X&#243;a kho&#7843;n chi"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg></button>` : ""}
+          ${item.can_edit ? `<button type="button" class="btn btn-subtle icon-button history-icon edit" data-action="edit" data-id="${item.id}" aria-label="S&#7917;a kho&#7843;n chi" title="S&#7917;a kho&#7843;n chi"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5-12 12-6 1 1-6L16 3Z"/><path d="m14 5 5 5"/></svg></button>
+          <button type="button" class="btn btn-subtle icon-button history-icon delete" data-action="delete" data-id="${item.id}" aria-label="X&#243;a kho&#7843;n chi" title="X&#243;a kho&#7843;n chi"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg></button>` : ""}
         </div>
       </td>
     </tr>
@@ -480,6 +482,9 @@ function showAuth() {
 }
 
 async function showDashboard(user) {
+  ledgerStorageKey = `heo-dat:ledger:${user.username}`;
+  try { preferredLedger = localStorage.getItem(ledgerStorageKey) || ""; }
+  catch (_) { preferredLedger = ""; }
   document.getElementById("currentUser").textContent = user.username;
   document.getElementById("avatarInitial").textContent = user.username.slice(0, 1).toUpperCase();
   renderAvatar(user.avatar_url);
@@ -547,7 +552,7 @@ async function refreshGroups() {
   const version = accountVersion;
   const [groups, invitations] = await Promise.all([api("/api/groups"), api("/api/invitations")]);
   if (version !== accountVersion) return;
-  const previous = ledgerPicker.value;
+  const previous = preferredLedger;
   familyGroups = groups;
   ledgerPicker.innerHTML = '<option value="">Cá nhân</option>' + groups.map(group =>
     `<option value="${group.id}">${html(group.name)}</option>`).join("");
@@ -591,6 +596,9 @@ document.addEventListener("visibilitychange", pollInvitations);
 
 async function renderGroupDetails() {
   const group = selectedGroup();
+  preferredLedger = ledgerPicker.value;
+  try { if (ledgerStorageKey) localStorage.setItem(ledgerStorageKey, preferredLedger); }
+  catch (_) { /* The picker still works when browser storage is unavailable. */ }
   document.dispatchEvent(new CustomEvent("family-ledger-changed", {detail: group}));
   document.getElementById("groupDetails").classList.toggle("hidden", !group);
   document.getElementById("inviteForm").classList.toggle("hidden", !group?.is_owner);

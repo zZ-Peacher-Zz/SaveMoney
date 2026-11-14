@@ -1,0 +1,23 @@
+{
+  "name": "heo-dat-ui",
+  "private": true,
+  "scripts": {
+    "build": "esbuild frontend/date-pickers.jsx --bundle --minify --format=iife --define:process.env.NODE_ENV=\"\\\"production\\\"\" --outfile=static/calendar.js && tailwindcss -i frontend/calendar.css -o static/calendar.css --minify"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.5.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-day-picker": "^9.13.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.7.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.0.0",
+    "esbuild": "^0.25.0",
+    "tailwindcss": "^4.0.0"
+  }
+}

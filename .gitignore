@@ -11,3 +11,5 @@ expense_tracker.db
 .idea/
 .vscode/
 *.log
+
+node_modules/

@@ -4,11 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Heo &#272;&#7845;t - Thu chi gia &#273;&#236;nh</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20261114-kaiju-1">
+  <link rel="stylesheet" href="/static/vendor/bootstrap/bootstrap.min.css?v=6.0.0-alpha.1">
+  <link rel="stylesheet" href="/static/calendar.css?v=2">
+  <link rel="stylesheet" href="/static/styles.css?v=20261114-shadcn-button-1">
 </head>
 <body>
   {% include "christmas_effects.html" %}
-  <div id="dashboard" class="shell is-loading" aria-busy="true">
+  <div id="dashboard" class="container-fluid shell is-loading" aria-busy="true">
     <header class="header">
       {% include "brand.html" %}
       <h1 class="sr-only">Heo &#272;&#7845;t - Thu chi gia &#273;&#236;nh</h1>
@@ -23,7 +25,7 @@
           <summary>T&#224;i kho&#7843;n</summary>
           <div class="profile-menu">
           <strong id="currentUser"></strong>
-          <button id="logoutBtn" class="button logout-button" type="button">Đăng xuất</button>
+          <button id="logoutBtn" class="btn btn-subtle button logout-button" type="button">Đăng xuất</button>
 
         <div class="avatar-controls">
           <label for="avatarInput" class="avatar-label">Đổi ảnh đại diện</label>
@@ -35,7 +37,7 @@
         </details>
         <label class="month-label header-month">
           <span class="sr-only">Tháng</span>
-          <input id="monthPicker" type="month">
+          <input class="form-control" id="monthPicker" type="month">
         </label>
       </div>
     </header>
@@ -50,17 +52,17 @@
         <div class="right-column"><div class="panel">{% for i in range(4) %}<div class="skeleton-line"></div>{% endfor %}</div><div class="panel">{% for i in range(6) %}<div class="skeleton-line field"></div>{% endfor %}</div></div>
       </div>
     </section>
-    <div id="dashboardLoadStatus" role="status" aria-live="polite"><span id="dashboardLoadMessage" class="sr-only">&#272;ang t&#7843;i d&#7919; li&#7879;u...</span><button id="retryDashboard" class="button secondary hidden" type="button">Th&#7917; l&#7841;i</button></div>
+    <div id="dashboardLoadStatus" role="status" aria-live="polite"><span id="dashboardLoadMessage" class="sr-only">&#272;ang t&#7843;i d&#7919; li&#7879;u...</span><button id="retryDashboard" class="btn btn-subtle button secondary hidden" type="button">Th&#7917; l&#7841;i</button></div>
 
     <div class="overview-grid">
-    <section class="panel family-panel">
+    <section class="card panel family-panel">
       <div class="panel-title split">
         <div><span class="overline">FAMILY</span><h2>Sổ thu chi</h2></div>
-        <button id="refreshGroupsBtn" type="button" class="button ghost compact history-icon" aria-label="Làm mới nhóm và lời mời" title="Làm mới nhóm và lời mời"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7a9 9 0 1 0 1 9M21 3v5h-5"/></svg></button>
+        <button id="refreshGroupsBtn" type="button" class="btn btn-subtle button ghost compact history-icon" aria-label="Làm mới nhóm và lời mời" title="Làm mới nhóm và lời mời"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7a9 9 0 1 0 1 9M21 3v5h-5"/></svg></button>
       </div>
-      <label class="month-label"><span>Đang xem và ghi thu chi vào</span><select id="ledgerPicker"><option value="">Cá nhân</option></select></label>
+      <div class="month-label ledger-field"><span id="ledgerPickerLabel">Sổ thu chi đang chọn</span><span class="ledger-select-wrap"><svg class="ledger-select-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h12a2 2 0 0 1 2 2v14H6a2 2 0 0 1-2-2V4Z"/><path d="M4 16h14M8 8h6M8 11h4M20 7v13"/></svg><select class="form-control" id="ledgerPicker"><option value="">Cá nhân</option></select><svg class="ledger-select-chevron" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></div>
       <p id="ledgerHint">Chỉ bạn xem được sổ cá nhân.</p>
-      <button id="openFamilyManager" type="button" class="button secondary" aria-haspopup="dialog" aria-controls="familyManager">Qu&#7843;n l&#253; gia &#273;&#236;nh</button>
+      <button id="openFamilyManager" type="button" class="btn btn-subtle button secondary" aria-haspopup="dialog" aria-controls="familyManager">Qu&#7843;n l&#253; gia &#273;&#236;nh</button>
       <div id="invitations" aria-live="polite"></div>
     </section>
 
@@ -68,7 +70,7 @@
       <article class="metric-card">
         <span>Thu nhập tổng</span>
         <strong id="incomeValue">0 ₫</strong>
-        <button id="openIncomeDialog" type="button" class="button secondary compact income-action" aria-haspopup="dialog" aria-controls="incomeDialog">+ Thêm thu nhập</button>
+        <button id="openIncomeDialog" type="button" class="btn btn-subtle button secondary compact income-action" aria-label="Thêm thu nhập" aria-haspopup="dialog" aria-controls="incomeDialog"><span class="income-action-full">Thêm thu nhập</span><span class="income-action-short">Thêm thu</span></button>
       </article>
       <article class="metric-card">
         <span>Tổng chi</span>
@@ -93,8 +95,8 @@
       Chi tiêu tháng này đã vượt thu nhập.
     </section>
 
-    <main class="layout">
-      <aside class="left-column">
+    <main class="layout row">
+      <aside class="left-column col-12 lg:col-4">
         <section class="panel">
           <div class="panel-title">
             <div>
@@ -106,12 +108,12 @@
           <form id="expenseForm">
             <label>
               <span>Ngày</span>
-              <input id="dateInput" type="date" required>
+              <input class="form-control" id="dateInput" type="date" required>
             </label>
 
             <label>
               <span>Phân loại</span>
-              <select id="categoryInput" required>
+              <select class="form-control" id="categoryInput" required>
                 <option>Nhà ở</option>
                 <option selected>Ăn uống</option>
                 <option>Xăng xe</option>
@@ -126,26 +128,26 @@
 
             <label>
               <span>Số tiền</span>
-              <input id="amountInput" type="text" inputmode="numeric" data-money-input data-min-amount="1" placeholder="Ví dụ 120.000" required>
+              <input class="form-control" id="amountInput" type="text" inputmode="numeric" data-money-input data-min-amount="1" placeholder="Ví dụ 120.000" required>
             </label>
 
             <label>
               <span>Ghi chú</span>
-              <textarea id="noteInput" maxlength="255" placeholder="Ví dụ: Ăn trưa, tiền điện, mua sách..."></textarea>
+              <textarea class="form-control" id="noteInput" maxlength="255" placeholder="Ví dụ: Ăn trưa, tiền điện, mua sách..."></textarea>
             </label>
 
             <div class="form-actions">
-              <button id="submitBtn" class="button primary" type="submit">Thêm khoản chi</button>
-              <button id="cancelEditBtn" class="button ghost hidden" type="button">Huỷ sửa</button>
+              <button id="submitBtn" class="btn btn-solid button primary" type="submit">Thêm khoản chi</button>
+              <button id="cancelEditBtn" class="btn btn-subtle button ghost hidden" type="button">Huỷ sửa</button>
             </div>
           </form>
         </section>
       </aside>
 
-      <section class="right-column">
+      <section class="right-column col-12 lg:col-8">
 
 
-        <section class="panel history-panel">
+        <section class="card panel history-panel">
           <div class="panel-title split">
             <div>
               <span class="overline">HISTORY</span>
@@ -154,10 +156,10 @@
             </div>
 
             <div class="toolbar">
-              <button id="openInsight" type="button" class="history-icon button secondary compact" aria-label="Phân tích chi tiêu" title="Phân tích chi tiêu" aria-haspopup="dialog" aria-controls="insightDialog"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18M7 16v-4m5 4V8m5 8V5"/></svg></button>
-              <button id="openHistoryFilters" type="button" class="history-icon button secondary compact" aria-label="B&#7897; l&#7885;c l&#7883;ch s&#7917; chi ti&#234;u" title="B&#7897; l&#7885;c l&#7883;ch s&#7917; chi ti&#234;u" aria-haspopup="dialog" aria-controls="historyFilterDialog"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="currentColor"/><circle cx="15" cy="17" r="3" fill="currentColor"/></svg></button>
-              <a id="exportBtn" aria-label="Xu&#7845;t CSV c&#7843; th&#225;ng" title="Xu&#7845;t CSV c&#7843; th&#225;ng" class="history-icon button secondary compact" href="#"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg></a>
-              <button id="clearBtn" aria-label="X&#243;a d&#7919; li&#7879;u th&#225;ng" title="X&#243;a d&#7919; li&#7879;u th&#225;ng" class="history-icon button danger compact"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg></button>
+              <button id="openInsight" type="button" class="btn btn-subtle history-icon button secondary compact" aria-label="Phân tích chi tiêu" title="Phân tích chi tiêu" aria-haspopup="dialog" aria-controls="insightDialog"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18M7 16v-4m5 4V8m5 8V5"/></svg></button>
+              <button id="openHistoryFilters" type="button" class="btn btn-subtle history-icon button secondary compact" aria-label="B&#7897; l&#7885;c l&#7883;ch s&#7917; chi ti&#234;u" title="B&#7897; l&#7885;c l&#7883;ch s&#7917; chi ti&#234;u" aria-haspopup="dialog" aria-controls="historyFilterDialog"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="currentColor"/><circle cx="15" cy="17" r="3" fill="currentColor"/></svg></button>
+              <a id="exportBtn" aria-label="Xu&#7845;t CSV c&#7843; th&#225;ng" title="Xu&#7845;t CSV c&#7843; th&#225;ng" class="btn btn-subtle history-icon button secondary compact" href="#"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg></a>
+              <button id="clearBtn" aria-label="X&#243;a d&#7919; li&#7879;u th&#225;ng" title="X&#243;a d&#7919; li&#7879;u th&#225;ng" class="btn btn-subtle history-icon button danger compact"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg></button>
             </div>
           </div>
 
@@ -190,54 +192,54 @@
   </div>
 
   <dialog id="deleteConfirmDialog" class="family-dialog finance-dialog" aria-labelledby="deleteConfirmTitle" aria-describedby="deleteConfirmMessage">
-    <header class="family-dialog-header"><h2 id="deleteConfirmTitle">Xác nhận xóa</h2><button id="closeDeleteConfirm" type="button" class="button ghost">Đóng</button></header>
+    <header class="family-dialog-header"><h2 id="deleteConfirmTitle">Xác nhận xóa</h2><button id="closeDeleteConfirm" type="button" class="btn btn-subtle button ghost">Đóng</button></header>
     <div class="family-dialog-content">
       <p id="deleteConfirmMessage"></p>
       <p class="delete-warning">Hành động này không thể hoàn tác.</p>
-      <form method="dialog" class="delete-confirm-actions"><button type="submit" value="cancel" class="button ghost" autofocus>Hủy</button><button type="submit" value="delete" class="button danger">Xóa</button></form>
+      <form method="dialog" class="delete-confirm-actions"><button type="submit" value="cancel" class="btn btn-subtle button ghost" autofocus>Hủy</button><button type="submit" value="delete" class="btn btn-solid button danger">Xóa</button></form>
     </div>
   </dialog>
   <dialog id="insightDialog" class="family-dialog finance-dialog" aria-labelledby="insightTitle">
-    <header class="family-dialog-header"><h2 id="insightTitle">Chi tiêu theo danh mục</h2><button id="closeInsight" type="button" class="button ghost">Đóng</button></header>
+    <header class="family-dialog-header"><h2 id="insightTitle">Chi tiêu theo danh mục</h2><button id="closeInsight" type="button" class="btn btn-subtle button ghost">Đóng</button></header>
     <div class="family-dialog-content"><p>Tỷ trọng theo tổng chi của tháng và sổ đang chọn.</p><div id="breakdown" class="breakdown"></div></div>
   </dialog>
   <dialog id="incomeDialog" class="family-dialog finance-dialog" aria-labelledby="incomeTitle">
-    <header class="family-dialog-header"><h2 id="incomeTitle">Thu nhập tháng</h2><button id="closeIncomeDialog" type="button" class="button ghost">Đóng</button></header>
+    <header class="family-dialog-header"><h2 id="incomeTitle">Thu nhập tháng</h2><button id="closeIncomeDialog" type="button" class="btn btn-subtle button ghost">Đóng</button></header>
     <div class="family-dialog-content">
       <p id="incomeHint" class="hidden">Nhập tổng phần thu nhập bạn góp vào gia đình trong tháng. Số tiền này thay thế mức đóng góp đã lưu của bạn, không cộng thêm.</p>
       <form id="incomeForm">
-        <label for="incomeInput"><span>Thu nhập của bạn trong tháng (₫)</span><input id="incomeInput" type="text" inputmode="numeric" data-money-input data-min-amount="0" required placeholder="Ví dụ 20.000.000"></label>
-        <button id="saveIncomeBtn" type="submit" class="button primary">Lưu thu nhập</button>
+        <label for="incomeInput"><span>Thu nhập của bạn trong tháng (₫)</span><input class="form-control" id="incomeInput" type="text" inputmode="numeric" data-money-input data-min-amount="0" required placeholder="Ví dụ 20.000.000"></label>
+        <button id="saveIncomeBtn" type="submit" class="btn btn-solid button primary">Lưu thu nhập</button>
       </form>
     </div>
   </dialog>
   <dialog id="historyFilterDialog" class="family-dialog finance-dialog" aria-labelledby="historyFilterTitle">
-    <header class="family-dialog-header"><h2 id="historyFilterTitle">Bộ lọc lịch sử chi tiêu</h2><button id="closeHistoryFilters" type="button" class="button ghost">Đóng</button></header>
+    <header class="family-dialog-header"><h2 id="historyFilterTitle">Bộ lọc lịch sử chi tiêu</h2><button id="closeHistoryFilters" type="button" class="btn btn-subtle button ghost">Đóng</button></header>
     <div class="family-dialog-content">
           <form id="historyFilters" class="history-filters" aria-label="B&#7897; l&#7885;c l&#7883;ch s&#7917; chi ti&#234;u">
-            <label class="history-search"><span>T&#236;m ki&#7871;m</span><input id="historySearch" type="search" placeholder="Ghi ch&#250;, danh m&#7909;c, th&#224;nh vi&#234;n" maxlength="255"></label>
-            <label><span>Danh m&#7909;c</span><select id="historyCategory"><option value="">T&#7845;t c&#7843; danh m&#7909;c</option></select></label>
-            <label><span>T&#7915; ng&#224;y</span><input id="historyFrom" type="date"></label>
-            <label><span>&#272;&#7871;n ng&#224;y</span><input id="historyTo" type="date"></label>
-            <button id="clearHistoryFilters" aria-label="X&#243;a b&#7897; l&#7885;c" title="X&#243;a b&#7897; l&#7885;c" class="history-icon button ghost compact" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10a9 9 0 1 1 2 8M3 3v7h7"/></svg></button>
+            <label class="history-search"><span>T&#236;m ki&#7871;m</span><input class="form-control" id="historySearch" type="search" placeholder="Ghi ch&#250;, danh m&#7909;c, th&#224;nh vi&#234;n" maxlength="255"></label>
+            <label><span>Danh m&#7909;c</span><select class="form-control" id="historyCategory"><option value="">T&#7845;t c&#7843; danh m&#7909;c</option></select></label>
+            <label><span>T&#7915; ng&#224;y</span><input class="form-control" id="historyFrom" type="date"></label>
+            <label><span>&#272;&#7871;n ng&#224;y</span><input class="form-control" id="historyTo" type="date"></label>
+            <button id="clearHistoryFilters" aria-label="X&#243;a b&#7897; l&#7885;c" title="X&#243;a b&#7897; l&#7885;c" class="btn btn-subtle history-icon button ghost compact" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10a9 9 0 1 1 2 8M3 3v7h7"/></svg></button>
 
-            <button type="submit" class="button primary">Xem kết quả</button>
+            <button type="submit" class="btn btn-solid button primary">Xem kết quả</button>
           </form>
     </div>
   </dialog>
 
   <dialog id="familyManager" class="family-dialog" aria-labelledby="familyManagerTitle">
-    <header class="family-dialog-header"><h2 id="familyManagerTitle">Qu&#7843;n l&#253; gia &#273;&#236;nh</h2><button id="closeFamilyManager" type="button" class="button ghost">&#272;&#243;ng</button></header>
+    <header class="family-dialog-header"><h2 id="familyManagerTitle">Qu&#7843;n l&#253; gia &#273;&#236;nh</h2><button id="closeFamilyManager" type="button" class="btn btn-subtle button ghost">&#272;&#243;ng</button></header>
     <div class="family-dialog-content">
         <form id="createGroupForm" class="family-form">
-          <label><span>Tên gia đình mới</span><input id="groupNameInput" maxlength="80" required placeholder="Ví dụ: Gia đình mình"></label>
-          <button class="button secondary" type="submit">Tạo nhóm</button>
+          <label><span>Tên gia đình mới</span><input class="form-control" id="groupNameInput" maxlength="80" required placeholder="Ví dụ: Gia đình mình"></label>
+          <button class="btn btn-subtle button secondary" type="submit">Tạo nhóm</button>
         </form>
         <div id="groupDetails" class="hidden">
           <h3>Thành viên</h3><div id="memberList"></div>
           <form id="inviteForm" class="family-form hidden">
-            <label><span>Mời bằng tên đăng nhập đã có tài khoản</span><input id="inviteUsernameInput" minlength="3" maxlength="50" required autocomplete="off"></label>
-            <button class="button secondary" type="submit">Gửi lời mời</button>
+            <label><span>Mời bằng tên đăng nhập đã có tài khoản</span><input class="form-control" id="inviteUsernameInput" minlength="3" maxlength="50" required autocomplete="off"></label>
+            <button class="btn btn-subtle button secondary" type="submit">Gửi lời mời</button>
           </form>
         </div>
     </div>
@@ -249,29 +251,31 @@
     <canvas id="avatarCropCanvas" width="512" height="512" tabindex="0" aria-label="Vùng cắt ảnh đại diện, kéo ảnh hoặc dùng phím mũi tên"></canvas>
     <label class="crop-zoom"><span>Phóng to</span><input id="avatarZoom" type="range" min="1" max="4" step="0.01" value="1"></label>
     <div class="form-actions">
-      <button id="cancelAvatarCrop" type="button" class="button ghost">Hủy</button>
-      <button id="saveAvatarCrop" type="button" class="button primary">Lưu ảnh đại diện</button>
+      <button id="cancelAvatarCrop" type="button" class="btn btn-subtle button ghost">Hủy</button>
+      <button id="saveAvatarCrop" type="button" class="btn btn-solid button primary">Lưu ảnh đại diện</button>
     </div>
   </dialog>
         <dialog id="familyChat" class="panel chat-panel" aria-labelledby="chatTitle">
             <div class="floating-chat-header"><button id="closeFamilyChat" class="chat-close" type="button" aria-label="&#272;&#243;ng chat gia &#273;&#236;nh"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button><div class="chat-header-copy"><h2 id="chatTitle">Chat gia &#273;&#236;nh</h2><p id="chatPresenceStatus" aria-live="polite">Tr&#242; chuy&#7879;n gia &#273;&#236;nh</p></div><img class="chat-header-logo" src="/static/heo-dat-logo.svg" alt="" width="36" height="36"></div>
-            <button id="chatOlder" type="button" class="button ghost compact hidden">Tin nh&#7855;n c&#361; h&#417;n</button>
+            <button id="chatOlder" type="button" class="btn btn-subtle button ghost compact hidden">Tin nh&#7855;n c&#361; h&#417;n</button>
             <div id="chatMessages" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions" aria-label="Tin nh&#7855;n gia &#273;&#236;nh" tabindex="0"></div>
             <p id="chatStatus" role="status" class="chat-status"></p>
             <div class="chat-quick-replies" aria-label="G&#7907;i &#253; tin nh&#7855;n"><button type="button">C&#7843;m &#417;n c&#7843; nh&#224;!</button><button type="button">C&#7843; nh&#224; th&#7845;y sao?</button></div>
             <form id="chatForm">
               <label class="sr-only" for="chatInput">Tin nh&#7855;n cho gia &#273;&#236;nh</label>
-              <div class="chat-composer"><textarea id="chatInput" maxlength="2000" rows="1" required placeholder="Nh&#7853;p tin nh&#7855;n..."></textarea><button id="chatSend" type="submit" aria-label="G&#7917;i tin nh&#7855;n" title="G&#7917;i tin nh&#7855;n"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 7-7 7 7M12 5v15"/></svg></button></div>
+              <div class="chat-composer"><textarea class="form-control" id="chatInput" maxlength="2000" rows="1" required placeholder="Nh&#7853;p tin nh&#7855;n..."></textarea><button id="chatSend" type="submit" aria-label="G&#7917;i tin nh&#7855;n" title="G&#7917;i tin nh&#7855;n"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 7-7 7 7M12 5v15"/></svg></button></div>
             </form>
         </dialog>
   <button id="familyChatLauncher" class="chat-launcher" type="button" aria-label="Ch&#7885;n s&#7893; gia &#273;&#236;nh &#273;&#7875; chat" aria-haspopup="dialog" aria-controls="familyChat" aria-expanded="false" disabled><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-3 2V11.5A8.5 8.5 0 0 1 9.5 3h3a8.5 8.5 0 0 1 8.5 8.5Z"/><path d="M6 11h2m3 0h2m3 0h2"/></svg></button>
-  <div id="toast" class="toast hidden"></div>
+  <div id="toast" class="app-toast hidden"></div>
   <script src="/static/field-errors.js?v=2"></script>
-  <script src="/static/family-dialog.js?v=4"></script>
+  <script src="/static/family-dialog.js?v=5"></script>
   <script src="/static/money-input.js?v=1"></script>
   <script src="/static/avatar-crop.js"></script>
-  <script src="/static/app.js?v=20261114-history-days-1"></script>
+  <script src="/static/ledger-picker.js?v=1"></script>
+  <script src="/static/app.js?v=20261114-ledger-picker-1"></script>
   <script src="/static/family-chat.js?v=8"></script>
+  <script defer src="/static/calendar.js?v=3"></script>
   <script src="/static/presence.js?v=1"></script>
   {% include "music_player.html" %}
 </body>

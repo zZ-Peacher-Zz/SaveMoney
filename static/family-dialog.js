@@ -6,10 +6,10 @@
     ["insightDialog", "openInsight", "closeInsight"]
   ]) {
     const dialog = document.getElementById(dialogId);
-    const opener = document.getElementById(openerId);
     let scrollY = 0;
     const saved = {};
-    opener.addEventListener("click", () => {
+    document.addEventListener("click", event => {
+      if (!event.target.closest(`#${openerId}`)) return;
       if (dialog.open) return;
       scrollY = window.scrollY;
       for (const key of ["position", "top", "width", "overflow"]) saved[key] = document.body.style[key];
@@ -36,7 +36,7 @@
     dialog.addEventListener("close", () => {
       for (const key of Object.keys(saved)) document.body.style[key] = saved[key];
       window.scrollTo(0, scrollY);
-      opener.focus({preventScroll: true});
+      document.getElementById(openerId)?.focus({preventScroll: true});
     });
   }
 })();

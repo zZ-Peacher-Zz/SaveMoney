@@ -1,0 +1,20 @@
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css";
+@source "./calendar.tsx";
+@source "./button.tsx";
+@source "./date-pickers.jsx";
+@theme {
+  --color-background: #ffffff;
+  --color-popover: #ffffff;
+  --color-primary: #7964da;
+  --color-primary-foreground: #ffffff;
+  --color-accent: #eee8ff;
+  --color-accent-foreground: #624bb3;
+  --color-muted-foreground: #7a8493;
+  --color-ring: #a799e2;
+  --color-input: #e5def7;
+  --color-secondary: #eee8ff;
+  --color-secondary-foreground: #624bb3;
+  --color-destructive: #d84b66;
+  --color-destructive-foreground: #ffffff;
+}
