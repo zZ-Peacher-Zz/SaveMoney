@@ -1,9 +1,17 @@
 (() => {
   const panel = document.getElementById("familyChat");
   const launcher = document.getElementById("familyChatLauncher");
-  function closeChat() {panel.close();launcher.setAttribute("aria-expanded","false");}
+  let savedScroll=null;
+  function closeChat() {
+    panel.close();launcher.setAttribute("aria-expanded","false");
+    if(savedScroll){const state=savedScroll;savedScroll=null;Object.assign(document.body.style,state.styles);window.scrollTo(0,state.y);}
+  }
   launcher.addEventListener("click",()=>{
     if(panel.open){closeChat();return;}
+    if(matchMedia("(max-width: 580px)").matches){
+      savedScroll={y:scrollY,styles:{position:document.body.style.position,top:document.body.style.top,width:document.body.style.width,overflow:document.body.style.overflow}};
+      Object.assign(document.body.style,{position:"fixed",top:`-${scrollY}px`,width:"100%",overflow:"hidden"});
+    }
     panel.show();launcher.setAttribute("aria-expanded","true");
     input.focus();log.scrollTop=log.scrollHeight;
   });
@@ -12,13 +20,15 @@
   const log = document.getElementById("chatMessages");
   const form = document.getElementById("chatForm");
   const input = document.getElementById("chatInput");
+  document.querySelectorAll(".chat-quick-replies button").forEach(button=>button.addEventListener("click",()=>{input.value=button.textContent;FieldErrors.clear(input);input.focus();}));
+  input.addEventListener("input",()=>{input.style.height="auto";input.style.height=Math.min(input.scrollHeight,120)+"px";});
   const send = document.getElementById("chatSend");
   const older = document.getElementById("chatOlder");
   const status = document.getElementById("chatStatus");
   let group = null, generation = 0, messages = new Map(), polling = false, sending = false;
   let receivedId = 0, loaded = false;
   const drafts = new Map();
-  const time = new Intl.DateTimeFormat("vi-VN", {day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+  const time = new Intl.DateTimeFormat("vi-VN", {hour:"2-digit",minute:"2-digit"});
   async function request(url, options={}) {
     const response = await fetch(url, {cache:"no-store", ...options, headers:{"Content-Type":"application/json"}});
     if (!response.ok) {
@@ -39,13 +49,31 @@
     for (const message of items) {
       if (existing.has(message.id)) continue;
       const bubble=document.createElement("article");bubble.className="chat-bubble"+(message.is_mine?" mine":"");bubble.dataset.messageId=message.id;
+      bubble.dataset.initial=message.username.slice(0,1).toUpperCase();
+      bubble.dataset.day=new Date(message.created_at).toLocaleDateString("vi-VN");
       const author=document.createElement("strong");author.textContent=message.username;
       const text=document.createElement("p");text.textContent=message.content;
       const stamp=document.createElement("time");stamp.dateTime=new Date(message.created_at).toISOString();stamp.textContent=time.format(new Date(message.created_at));
-      bubble.append(author,text,stamp);
+      const avatar=document.createElement("span");avatar.className="chat-message-avatar";avatar.dataset.presenceUser=message.user_id;
+      avatar.textContent=message.username.slice(0,1).toUpperCase();avatar.setAttribute("aria-hidden","true");
+      if(message.avatar_url){
+        const image=document.createElement("img");image.src=message.avatar_url;image.alt="";image.loading="lazy";
+        image.addEventListener("error",()=>image.remove(),{once:true});avatar.append(image);
+      }
+      bubble.append(avatar,author,text,stamp);
       const next=[...log.children].find(node=>Number(node.dataset.messageId)>message.id);
       log.insertBefore(bubble,next||null);
     }
+    log.querySelectorAll(".chat-day").forEach(node=>node.remove());
+    let previousDay="";
+    for(const bubble of log.querySelectorAll(".chat-bubble")){
+      if(bubble.dataset.day!==previousDay){
+        const divider=document.createElement("div");divider.className="chat-day";
+        divider.textContent=bubble.dataset.day===new Date().toLocaleDateString("vi-VN")?"H\u00f4m nay":bubble.dataset.day;
+        bubble.before(divider);previousDay=bubble.dataset.day;
+      }
+    }
+    document.dispatchEvent(new Event("chat-messages-rendered"));
     if (bottom) log.scrollTop=log.scrollHeight;
   }
   function handleError(error, token) {
@@ -82,7 +110,7 @@
     input.disabled=false;input.readOnly=false;send.disabled=false;older.disabled=false;older.classList.add("hidden");
     input.value=group?(drafts.get(group.id)||""):"";
     if (!group) return;
-    document.getElementById("chatGroupName").textContent=group.name;
+    document.getElementById("chatTitle").textContent=group.name;
     status.textContent="\u0110ang t\u1ea3i tin nh\u1eafn...";
     poll();
   }
@@ -110,7 +138,7 @@
     try {
       const message=await request(endpoint(id),{method:"POST",body:JSON.stringify({content})});
       if(token!==generation)return;
-      merge([message],true);input.value="";drafts.delete(id);status.textContent="\u0110\u00e3 g\u1eedi.";
+      merge([message],true);input.value="";input.style.height="auto";drafts.delete(id);status.textContent="\u0110\u00e3 g\u1eedi.";
     } catch(error){if(token===generation)FieldErrors.set(input,error.message);handleError(error,token);}
     finally {if(token===generation){sending=false;input.readOnly=false;send.disabled=!group;}}
   });

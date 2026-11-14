@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Heo &#272;&#7845;t - Thu chi gia &#273;&#236;nh</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20261113-floating-chat-1">
+  <link rel="stylesheet" href="/static/styles.css?v=20261114-presence-1">
 </head>
 <body>
   {% include "christmas_effects.html" %}
@@ -34,7 +34,7 @@
           </div>
         </details>
         <label class="month-label header-month">
-          <span>Tháng</span>
+          <span class="sr-only">Tháng</span>
           <input id="monthPicker" type="month">
         </label>
       </div>
@@ -181,8 +181,8 @@
             </div>
 
             <div class="toolbar">
-              <a id="exportBtn" class="button secondary compact" href="#">Xuất CSV</a>
-              <button id="clearBtn" class="button danger compact">Xoá tháng</button>
+              <a id="exportBtn" aria-label="Xu&#7845;t CSV c&#7843; th&#225;ng" title="Xu&#7845;t CSV c&#7843; th&#225;ng" class="history-icon button secondary compact" href="#"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg></a>
+              <button id="clearBtn" aria-label="X&#243;a d&#7919; li&#7879;u th&#225;ng" title="X&#243;a d&#7919; li&#7879;u th&#225;ng" class="history-icon button danger compact"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg></button>
             </div>
           </div>
 
@@ -191,7 +191,7 @@
             <label><span>Danh m&#7909;c</span><select id="historyCategory"><option value="">T&#7845;t c&#7843; danh m&#7909;c</option></select></label>
             <label><span>T&#7915; ng&#224;y</span><input id="historyFrom" type="date"></label>
             <label><span>&#272;&#7871;n ng&#224;y</span><input id="historyTo" type="date"></label>
-            <button id="clearHistoryFilters" class="button ghost compact" type="button">X&#243;a b&#7897; l&#7885;c</button>
+            <button id="clearHistoryFilters" aria-label="X&#243;a b&#7897; l&#7885;c" title="X&#243;a b&#7897; l&#7885;c" class="history-icon button ghost compact" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10a9 9 0 1 1 2 8M3 3v7h7"/></svg></button>
             <p id="historyFilterStatus" role="status" aria-live="polite"></p>
           </form>
 
@@ -202,11 +202,12 @@
           </div>
 
           <div id="tableWrap" class="table-wrap hidden" role="region" aria-label="L&#7883;ch s&#7917; chi ti&#234;u">
-            <table>
+            <table class="history-table"><colgroup><col style="width:14%"><col style="width:15%"><col style="width:16%"><col style="width:23%"><col style="width:18%"><col style="width:14%"></colgroup>
               <thead>
                 <tr>
                   <th>Ngày</th>
                   <th>Phân loại</th>
+                  <th>Ng&#432;&#7901;i chi</th>
                   <th>Ghi chú</th>
                   <th class="align-right">Số tiền</th>
                   <th class="align-right">Thao tác</th>
@@ -248,15 +249,14 @@
     </div>
   </dialog>
         <dialog id="familyChat" class="panel chat-panel" aria-labelledby="chatTitle">
-            <div class="floating-chat-header"><span class="chat-icon" aria-hidden="true">&#9993;</span><h2 id="chatTitle">Chat gia &#273;&#236;nh</h2><button id="closeFamilyChat" class="chat-close" type="button" aria-label="&#272;&#243;ng chat gia &#273;&#236;nh">&#215;</button></div>
-            <p id="chatGroupName" class="chat-subtitle"></p>
+            <div class="floating-chat-header"><button id="closeFamilyChat" class="chat-close" type="button" aria-label="&#272;&#243;ng chat gia &#273;&#236;nh"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button><div class="chat-header-copy"><h2 id="chatTitle">Chat gia &#273;&#236;nh</h2><p id="chatPresenceStatus" aria-live="polite">Tr&#242; chuy&#7879;n gia &#273;&#236;nh</p></div><img class="chat-header-logo" src="/static/heo-dat-logo.svg" alt="" width="36" height="36"></div>
             <button id="chatOlder" type="button" class="button ghost compact hidden">Tin nh&#7855;n c&#361; h&#417;n</button>
             <div id="chatMessages" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions" aria-label="Tin nh&#7855;n gia &#273;&#236;nh" tabindex="0"></div>
             <p id="chatStatus" role="status" class="chat-status"></p>
+            <div class="chat-quick-replies" aria-label="G&#7907;i &#253; tin nh&#7855;n"><button type="button">C&#7843;m &#417;n c&#7843; nh&#224;!</button><button type="button">C&#7843; nh&#224; th&#7845;y sao?</button></div>
             <form id="chatForm">
-              <label for="chatInput">L&#7901;i nh&#7855;n cho gia &#273;&#236;nh</label>
-              <textarea id="chatInput" maxlength="2000" rows="2" required placeholder="H&#244;m nay nh&#224; m&#236;nh c&#243; g&#236; vui?"></textarea>
-              <div class="chat-compose-actions"><small>T&#7889;i &#273;a 2.000 k&#253; t&#7921;</small><button id="chatSend" class="button primary" type="submit">G&#7917;i tin &#8599;</button></div>
+              <label class="sr-only" for="chatInput">Tin nh&#7855;n cho gia &#273;&#236;nh</label>
+              <div class="chat-composer"><textarea id="chatInput" maxlength="2000" rows="1" required placeholder="Nh&#7853;p tin nh&#7855;n..."></textarea><button id="chatSend" type="submit" aria-label="G&#7917;i tin nh&#7855;n" title="G&#7917;i tin nh&#7855;n"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 7-7 7 7M12 5v15"/></svg></button></div>
             </form>
         </dialog>
   <button id="familyChatLauncher" class="chat-launcher" type="button" aria-label="Ch&#7885;n s&#7893; gia &#273;&#236;nh &#273;&#7875; chat" aria-haspopup="dialog" aria-controls="familyChat" aria-expanded="false" disabled><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-3 2V11.5A8.5 8.5 0 0 1 9.5 3h3a8.5 8.5 0 0 1 8.5 8.5Z"/><path d="M6 11h2m3 0h2m3 0h2"/></svg></button>
@@ -265,8 +265,9 @@
   <script src="/static/family-dialog.js?v=1"></script>
   <script src="/static/money-input.js?v=1"></script>
   <script src="/static/avatar-crop.js"></script>
-  <script src="/static/app.js?v=20261113-money-1"></script>
-  <script src="/static/family-chat.js?v=3"></script>
+  <script src="/static/app.js?v=20261114-presence-1"></script>
+  <script src="/static/family-chat.js?v=7"></script>
+  <script src="/static/presence.js?v=1"></script>
   {% include "music_player.html" %}
 </body>
 </html>

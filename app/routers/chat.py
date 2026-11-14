@@ -8,7 +8,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.dependencies import require_group
 from app.models.chat import GroupMessage
-from app.models.user import User
+from app.models.user import User, UserAvatar
+from app.models.group import GroupMember
 from app.security import current_user
 
 router = APIRouter(prefix="/api/groups/{group_id}/messages")
@@ -25,9 +26,11 @@ class MessagePayload(BaseModel):
         return value.strip()
 
 
-def serialize(message, username, user):
+def serialize(message, username, user, avatar_ids=()):
     return {"id": message.id, "username": username, "content": message.content,
-            "created_at": message.created_at, "is_mine": message.user_id == user.id}
+            "created_at": message.created_at, "is_mine": message.user_id == user.id,
+            "user_id": message.user_id,
+            "avatar_url": f"/api/groups/{message.group_id}/members/{message.user_id}/avatar" if message.user_id in avatar_ids else None}
 
 
 @router.get("")
@@ -51,7 +54,11 @@ def list_messages(group_id: int, response: Response,
     rows = rows[:100]
     if after_id is None:
         rows.reverse()
-    return {"messages": [serialize(message, username, user) for message, username in rows], "has_more": more}
+    author_ids = {message.user_id for message, _ in rows}
+    avatar_ids = set(db.scalars(select(UserAvatar.user_id).join(
+        GroupMember, GroupMember.user_id == UserAvatar.user_id
+    ).where(GroupMember.group_id == group_id, UserAvatar.user_id.in_(author_ids))).all()) if author_ids else set()
+    return {"messages": [serialize(message, username, user, avatar_ids) for message, username in rows], "has_more": more}
 
 
 @router.post("", status_code=201)
@@ -64,4 +71,5 @@ def send_message(group_id: int, payload: MessagePayload, response: Response,
     db.commit()
     db.refresh(message)
     response.headers["Cache-Control"] = "no-store"
-    return serialize(message, user.username, user)
+    avatar_ids = {user.id} if db.scalar(select(UserAvatar.user_id).where(UserAvatar.user_id == user.id)) is not None else set()
+    return serialize(message, user.username, user, avatar_ids)

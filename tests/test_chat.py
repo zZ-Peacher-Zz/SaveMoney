@@ -69,3 +69,18 @@ class ChatTests(unittest.TestCase):
         self.assertEqual(self.alice.get(url, params={"before_id": 10, "after_id": 1}).status_code, 400)
         self.alice.post("/api/auth/logout")
         self.assertEqual(self.alice.get(url).status_code, 401)
+
+    def test_message_avatar_is_available_only_to_group_members(self):
+        from io import BytesIO
+        from PIL import Image
+        group, url = self.family()
+        image = BytesIO()
+        Image.new("RGB", (32, 32), "purple").save(image, format="PNG")
+        self.assertEqual(self.alice.put("/api/auth/avatar", content=image.getvalue()).status_code, 200)
+        message = self.alice.post(url, json={"content": "Hello"}).json()
+        self.assertIsNotNone(message["avatar_url"])
+        self.assertEqual(self.alice.get(message["avatar_url"]).status_code, 200)
+        self.assertEqual(self.bob.get(message["avatar_url"]).status_code, 404)
+        listed = self.alice.get(url).json()["messages"][0]
+        self.assertEqual(listed["avatar_url"], message["avatar_url"])
+        self.assertEqual(listed["user_id"], message["user_id"])

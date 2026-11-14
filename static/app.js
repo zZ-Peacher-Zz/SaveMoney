@@ -264,7 +264,7 @@ function renderExpenses(items) {
     const total = expenses.reduce((sum, item) => sum + Number(item.amount), 0);
     return `
     <tr class="day-heading">
-      <th colspan="5">
+      <th colspan="6">
         <div class="day-summary">
           <span>${formatDate(day)} <small>· ${expenses.length} khoản chi</small></span>
           <span>Tổng ngày: ${money(total)}</span>
@@ -274,13 +274,14 @@ function renderExpenses(items) {
     ${expenses.map(item => `
     <tr>
       <td data-label="Ng\u00e0y">${formatDate(item.expense_date)}</td>
-      <td data-label="Ph\u00e2n lo\u1ea1i"><span class="tag">${html(item.category)}</span>${ledgerPicker.value ? `<small class="record-author">${html(item.username)}</small>` : ""}</td>
+      <td data-label="Ph\u00e2n lo\u1ea1i"><span class="tag">${html(item.category)}</span></td>
+      <td class="expense-author" data-label="Ng\u01b0\u1eddi chi">${html(item.username || document.getElementById("currentUser").textContent)}</td>
       <td data-label="Ghi ch\u00fa">${html(item.note || "—")}</td>
       <td class="amount" data-label="S\u1ed1 ti\u1ec1n">${money(item.amount)}</td>
       <td data-label="Thao t\u00e1c">
         <div class="row-actions">
-          ${item.can_edit ? `<button class="icon-button" data-action="edit" data-id="${item.id}">Sửa</button>
-          <button class="icon-button" data-action="delete" data-id="${item.id}">Xoá</button>` : ""}
+          ${item.can_edit ? `<button type="button" class="icon-button history-icon edit" data-action="edit" data-id="${item.id}" aria-label="S&#7917;a kho&#7843;n chi" title="S&#7917;a kho&#7843;n chi"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5-12 12-6 1 1-6L16 3Z"/><path d="m14 5 5 5"/></svg></button>
+          <button type="button" class="icon-button history-icon delete" data-action="delete" data-id="${item.id}" aria-label="X&#243;a kho&#7843;n chi" title="X&#243;a kho&#7843;n chi"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg></button>` : ""}
         </div>
       </td>
     </tr>
@@ -543,11 +544,12 @@ async function renderGroupDetails() {
   const members = await api(`/api/groups/${group.id}/members`);
   if (version !== accountVersion || selectedGroup()?.id !== group.id) return;
   document.getElementById("memberList").innerHTML = members.map(member => `
-    <div class="member-row"><div class="member-identity">
+    <div class="member-row" data-presence-user="${member.id}"><div class="member-identity">
       <span class="member-avatar"><span>${html(member.username.slice(0, 1).toUpperCase())}</span>${member.avatar_url ? `<img src="${html(member.avatar_url)}?v=${Date.now()}" alt="" loading="lazy">` : ""}</span>
       <div class="member-info"><strong>${html(member.username)}</strong><small>${member.is_owner ? "Chủ nhóm" : "Thành viên"}</small></div>
     </div>
     ${group.is_owner && !member.is_owner ? `<button class="button danger compact" data-remove="${member.id}">Xóa khỏi nhóm</button>` : ""}</div>`).join("");
+  document.dispatchEvent(new Event("family-members-rendered"));
   document.querySelectorAll(".member-avatar img").forEach(image => {
     image.addEventListener("error", () => image.remove(), {once: true});
   });
