@@ -1018,3 +1018,79 @@ body:not(.auth-page) > .music-player { position: fixed; left: 16px; right: auto;
   body:not(.auth-page) > .music-player[open] { max-width: calc(100% - 24px); }
   #toast { bottom: 88px; }
 }
+/* Finance controls share the existing centered dialog/mobile sheet layout. */
+.metric-card .income-action { align-self: flex-start; margin-top: var(--space-2); padding: var(--space-2) var(--space-3); max-width: 100%; }
+.finance-dialog .family-dialog-header .button { flex-shrink: 0; }
+.finance-dialog .history-filters { margin: 0; padding: 0; border: 0; background: transparent; }
+.finance-dialog #incomeHint { margin: 0 0 var(--space-4); }
+#historyFilterStatus { margin: 0 0 var(--space-4); color: var(--muted); overflow-wrap: anywhere; }
+.delete-confirm-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-6); }
+.delete-warning { color: var(--muted); font-size: var(--font-label); }
+@media (max-width: 580px) {
+  .history-table tbody tr:not(.day-heading) { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2) var(--space-3); padding: var(--space-3); margin-bottom: var(--space-3); }
+  .history-table td { display: block; padding: 0; border: 0; min-width: 0; overflow-wrap: anywhere; }
+  .history-table td::before { content: none; }
+  .history-table td:first-child { display: none; }
+  .history-table td:nth-child(2) { grid-column: 1; grid-row: 1; align-self: center; }
+  .history-table td.amount { grid-column: 2; grid-row: 1; align-self: center; text-align: right; font-size: var(--font-body); }
+  .history-table .expense-author { grid-column: 1; grid-row: 2; color: var(--muted); font-size: var(--font-label); }
+  .history-table .expense-note { grid-column: 1 / -1; grid-row: 3; font-size: var(--font-label); }
+  .history-table td:last-child { grid-column: 2; grid-row: 2; }
+  .history-table .row-actions { justify-content: flex-end; flex-wrap: nowrap; gap: var(--space-2); }
+  .history-table .history-icon { width: 36px; height: 36px; min-height: 36px; padding: var(--space-2); }
+  .history-table .day-heading th { padding: var(--space-2) var(--space-3); }
+  .history-table .day-summary { gap: var(--space-1); }
+}
+.history-table tr[hidden] { display: none !important; }
+.table-wrap .history-table .day-heading th { padding: 0; }
+.day-toggle { width: 100%; border: 0; padding: var(--space-3); background: transparent; color: var(--text); cursor: pointer; text-align: left; font: inherit; display: grid; grid-template-columns: minmax(0, 1fr) auto 20px; gap: var(--space-3); }
+.day-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; border-radius: 12px; }
+.day-copy { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--space-2); min-width: 0; }
+.day-total { text-align: right; overflow-wrap: anywhere; }
+.day-chevron { transition: transform .15s ease; }
+.day-toggle[aria-expanded="false"] .day-chevron { transform: rotate(-90deg); }
+@media (max-width: 1100px) {
+  .table-wrap .history-table .day-toggle { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, auto) 20px; align-items: center; gap: var(--space-2); }
+  .day-copy { flex-direction: column; gap: 0; }
+  .table-wrap .history-table tr:not(.day-heading) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, auto); gap: var(--space-2) var(--space-3); padding: var(--space-3); }
+  .table-wrap .history-table td { display: block; padding: 0; border: 0; min-width: 0; overflow-wrap: anywhere; }
+  .table-wrap .history-table td::before { content: none; }
+  .table-wrap .history-table td:first-child { display: none; }
+  .table-wrap .history-table td:nth-child(2) { grid-column: 1; grid-row: 1; align-self: center; }
+  .table-wrap .history-table td.amount { grid-column: 2; grid-row: 1; align-self: center; text-align: right; font-size: var(--font-body); }
+  .table-wrap .history-table .expense-author { grid-column: 1; grid-row: 2; color: var(--muted); font-size: var(--font-label); align-self: center; }
+  .table-wrap .history-table .expense-note { grid-column: 1 / -1; grid-row: 3; font-size: var(--font-label); }
+  .table-wrap .history-table td:last-child { grid-column: 2; grid-row: 2; }
+  .table-wrap .history-table .row-actions { justify-content: flex-end; flex-wrap: nowrap; gap: var(--space-2); }
+  .table-wrap .history-table .tag { white-space: normal; overflow-wrap: anywhere; }
+  .table-wrap .history-table .history-icon { width: 40px; height: 40px; min-height: 40px; padding: var(--space-2); }
+  .history-panel > .panel-title { align-items: flex-start; gap: var(--space-3); }
+  .history-panel .toolbar { display: flex; flex-wrap: wrap; gap: var(--space-2); width: auto; }
+  .history-panel .toolbar .history-icon { flex: 0 0 40px; width: 40px; height: 40px; min-height: 40px; padding: var(--space-2); }
+  .history-panel { min-width: 0; }
+}
+@media (max-width: 580px) {
+  .shell { padding-left: var(--space-3); padding-right: var(--space-3); }
+  .history-panel > .panel-title { flex-direction: column; }
+  .history-panel .toolbar { align-self: flex-end; }
+  .table-wrap .history-table .day-toggle { font-size: var(--font-label); }
+  .table-wrap .history-table .day-copy small { font-size: var(--font-caption); }
+  .family-panel .panel-title.split { flex-direction: row; align-items: center; }
+  .family-panel #refreshGroupsBtn { flex: 0 0 40px; width: 40px; height: 40px; padding: var(--space-2); }
+}
+.kaiju-battle { position: absolute; bottom: clamp(20px, 4vh, 48px); left: 50%; width: min(1100px, 120vw); transform: translateX(-50%); pointer-events: none; opacity: .8; }
+.kaiju-battle svg { display: block; width: 100%; height: auto; overflow: visible; }
+.godzilla-fighter { transform-origin: 370px 425px; animation: godzilla-brawl 6s ease-in-out infinite; }
+.kong-fighter { transform-origin: 680px 425px; animation: kong-brawl 6s ease-in-out infinite; }
+.kong-punch { transform-origin: 725px 250px; animation: kong-swing 6s ease-in-out infinite; }
+.atomic-breath { opacity: 0; animation: atomic-flare 6s ease-in-out infinite; }
+.battle-impact { transform-origin: 505px 267px; opacity: 0; animation: kaiju-impact 6s ease-out infinite; }
+.battle-dust { transform-origin: center bottom; animation: kaiju-dust 6s ease-in-out infinite; }
+@keyframes godzilla-brawl { 0%, 100% { transform: translateX(0) rotate(-3deg); } 25% { transform: translateX(30px) rotate(3deg); } 50% { transform: translateX(10px) rotate(-5deg); } 70% { transform: translateX(22px) rotate(2deg); } }
+@keyframes kong-brawl { 0%, 100% { transform: translateX(0) rotate(2deg); } 25% { transform: translateX(-25px) rotate(-6deg); } 50% { transform: translateX(12px) rotate(5deg); } 75% { transform: translateX(-10px) rotate(-3deg); } }
+@keyframes kong-swing { 0%, 10%, 75%, 100% { transform: rotate(0); } 25%, 32% { transform: rotate(-65deg); } 50% { transform: rotate(12deg); } }
+@keyframes atomic-flare { 0%, 40%, 70%, 100% { opacity: 0; } 48%, 60% { opacity: .65; } }
+@keyframes kaiju-impact { 0%, 20%, 38%, 100% { opacity: 0; transform: scale(.6); } 26% { opacity: .8; transform: scale(1.2); } 35% { opacity: 0; transform: scale(1.5); } }
+@keyframes kaiju-dust { 0%, 100% { transform: scaleX(1); opacity: .15; } 30%, 65% { transform: scaleX(1.15); opacity: .3; } }
+@media (max-width: 580px) { .kaiju-battle { width: 760px; max-width: none; bottom: 25px; opacity: .65; } }
+@media (prefers-reduced-motion: reduce) { .kaiju-battle * { animation: none !important; } }

@@ -5,6 +5,7 @@
     <span class="sky-star" style="--x: {{ (i * 37 + 3) % 100 }}%; --y: {{ (i * 23 + 5) % 76 }}%; --size: {{ 1 + i % 3 }}px; --delay: -{{ i % 9 }}s; --duration: {{ 3 + i % 5 }}s;"></span>
     {% endfor %}
   </div>
+  {% include "kaiju_battle.html" %}
   <div class="winter-city"></div>
 </div>
 <div class="christmas-effects" aria-hidden="true">

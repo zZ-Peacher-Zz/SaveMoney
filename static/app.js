@@ -24,6 +24,10 @@ const historyFrom = document.getElementById("historyFrom");
 const historyTo = document.getElementById("historyTo");
 const historyFilterStatus = document.getElementById("historyFilterStatus");
 let historyScope = "";
+const collapsedHistoryDays = new Set();
+let dashboardSnapshot = "";
+let ledgerTimer = null;
+let ledgerPolling = false;
 
 function normalizeSearch(value) {
   return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\u0111/g, "d").replace(/\u0110/g, "D").toLocaleLowerCase("vi");
@@ -31,7 +35,10 @@ function normalizeSearch(value) {
 
 function updateHistory(items) {
   const scope = `${monthPicker.value}:${ledgerPicker.value}`;
-  if (scope !== historyScope) historyFilters.reset();
+  if (scope !== historyScope) {
+    historyFilters.reset();
+    collapsedHistoryDays.clear();
+  }
   historyScope = scope;
   historyItems = items;
   const category = historyCategory.value;
@@ -65,7 +72,16 @@ function filterHistory() {
     emptyState.querySelector("span").textContent = historyItems.length ? "Th\u1eed \u0111\u1ed5i ho\u1eb7c x\u00f3a b\u1ed9 l\u1ecdc." : "Th\u00eam giao d\u1ecbch \u0111\u1ea7u ti\u00ean \u0111\u1ec3 b\u1eaft \u0111\u1ea7u theo d\u00f5i th\u00e1ng n\u00e0y.";
   }
 }
-historyFilters.addEventListener("submit", event => event.preventDefault());
+historyFilters.addEventListener("submit", event => {
+  event.preventDefault();
+  filterHistory();
+  if (historyFrom.value && historyTo.value && historyFrom.value > historyTo.value) {
+    FieldErrors.set(historyTo, "Ng\u00e0y k\u1ebft th\u00fac ph\u1ea3i t\u1eeb ng\u00e0y b\u1eaft \u0111\u1ea7u tr\u1edf \u0111i.");
+    historyTo.focus();
+    return;
+  }
+  document.getElementById("historyFilterDialog").close();
+});
 historySearch.addEventListener("input", filterHistory);
 for (const input of [historyCategory, historyFrom, historyTo]) input.addEventListener("change", filterHistory);
 document.getElementById("clearHistoryFilters").addEventListener("click", () => {
@@ -175,28 +191,51 @@ function setDashboardLoading(loading, error = "") {
   document.getElementById("retryDashboard").classList.toggle("hidden", !error);
 }
 
-async function loadAll() {
+async function loadAll({background = false} = {}) {
   const requestVersion = ++loadVersion;
   const version = accountVersion;
   const month = monthPicker.value;
-  setDashboardLoading(true);
+  const ledger = ledgerPicker.value;
+  if (!background) setDashboardLoading(true);
   try {
     const [summary, expenses] = await Promise.all([
-      api(`/api/months/${month}/summary`),
-      api(`/api/months/${month}/expenses`)
+      api(`/api/months/${month}/summary`, {cache: "no-store"}),
+      api(`/api/months/${month}/expenses`, {cache: "no-store"})
     ]);
-    if (version !== accountVersion || requestVersion !== loadVersion) return;
-    renderSummary(summary);
-    renderBreakdown(summary);
-    updateHistory(expenses);
-    MoneyInput.set(incomeInput, summary.my_income || "");
+    if (version !== accountVersion || requestVersion !== loadVersion || month !== monthPicker.value || ledger !== ledgerPicker.value) return;
+    const snapshot = JSON.stringify([month, ledger, summary, expenses]);
+    if (!background || snapshot !== dashboardSnapshot) {
+      renderSummary(summary);
+      renderBreakdown(summary);
+      updateHistory(expenses);
+      dashboardSnapshot = snapshot;
+    }
+    // Background updates must not replace a contribution the user is typing.
+    if (!background) MoneyInput.set(incomeInput, summary.my_income || "");
     document.getElementById("exportBtn").href = ledgerUrl(`/api/months/${month}/export.csv`);
     setDashboardLoading(false);
   } catch (error) {
-    if (version === accountVersion && requestVersion === loadVersion) setDashboardLoading(false, error.message);
+    if (!background && version === accountVersion && requestVersion === loadVersion) setDashboardLoading(false, error.message);
     throw error;
   }
 }
+
+async function pollLedger() {
+  if (!ledgerTimer || document.hidden || !ledgerPicker.value || ledgerPolling ||
+      dashboard.classList.contains("hidden") || dashboard.getAttribute("aria-busy") === "true") return;
+  ledgerPolling = true;
+  try {
+    await loadAll({background: true});
+  } catch (_) {
+    // Keep the current data during network failures; retry on the next tick.
+  } finally {
+    ledgerPolling = false;
+  }
+}
+
+window.addEventListener("focus", pollLedger);
+window.addEventListener("online", pollLedger);
+document.addEventListener("visibilitychange", pollLedger);
 
 async function initializeDashboardData() {
   setDashboardLoading(true);
@@ -265,18 +304,19 @@ function renderExpenses(items) {
     return `
     <tr class="day-heading">
       <th colspan="6">
-        <div class="day-summary">
-          <span>${formatDate(day)} <small>· ${expenses.length} khoản chi</small></span>
-          <span>Tổng ngày: ${money(total)}</span>
-        </div>
+        <button type="button" class="day-summary day-toggle" data-day="${day}" aria-expanded="${!collapsedHistoryDays.has(day)}" aria-controls="${expenses.map(item => `history-expense-${item.id}`).join(" ")}">
+          <span class="day-copy"><span>${formatDate(day)}</span><small>${expenses.length} khoản chi</small></span>
+          <span class="day-total">${money(total)}</span>
+          <svg class="day-chevron" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
       </th>
     </tr>
     ${expenses.map(item => `
-    <tr>
+    <tr id="history-expense-${item.id}" data-expense-day="${day}"${collapsedHistoryDays.has(day) ? " hidden" : ""}>
       <td data-label="Ng\u00e0y">${formatDate(item.expense_date)}</td>
       <td data-label="Ph\u00e2n lo\u1ea1i"><span class="tag">${html(item.category)}</span></td>
       <td class="expense-author" data-label="Ng\u01b0\u1eddi chi">${html(item.username || document.getElementById("currentUser").textContent)}</td>
-      <td data-label="Ghi ch\u00fa">${html(item.note || "—")}</td>
+      <td class="expense-note" data-label="Ghi ch\u00fa">${html(item.note || "—")}</td>
       <td class="amount" data-label="S\u1ed1 ti\u1ec1n">${money(item.amount)}</td>
       <td data-label="Thao t\u00e1c">
         <div class="row-actions">
@@ -287,6 +327,19 @@ function renderExpenses(items) {
     </tr>
     `).join("")}`;
   }).join("");
+
+  expenseBody.querySelectorAll(".day-toggle").forEach(button => {
+    button.addEventListener("click", () => {
+      const day = button.dataset.day;
+      const collapsed = !collapsedHistoryDays.has(day);
+      if (collapsed) collapsedHistoryDays.add(day);
+      else collapsedHistoryDays.delete(day);
+      button.setAttribute("aria-expanded", String(!collapsed));
+      expenseBody.querySelectorAll("[data-expense-day]").forEach(row => {
+        if (row.dataset.expenseDay === day) row.hidden = collapsed;
+      });
+    });
+  });
 
   expenseBody.querySelectorAll("[data-action='edit']").forEach(button => {
     button.addEventListener("click", () => editExpense(Number(button.dataset.id), items));
@@ -316,7 +369,7 @@ async function editExpense(id, items) {
 }
 
 async function deleteExpense(id) {
-  if (!confirm("Xoá khoản chi này?")) return;
+  if (!await confirmDelete("Xóa khoản chi này khỏi lịch sử chi tiêu?")) return;
 
   try {
     await api(`/api/expenses/${id}`, { method: "DELETE" });
@@ -327,8 +380,11 @@ async function deleteExpense(id) {
   }
 }
 
-document.getElementById("saveIncomeBtn").addEventListener("click", async () => {
+document.getElementById("incomeForm").addEventListener("submit", async event => {
+  event.preventDefault();
   if (!FieldErrors.validate(incomeInput)) return;
+  const button = document.getElementById("saveIncomeBtn");
+  button.disabled = true;
   try {
     await api(`/api/months/${monthPicker.value}/income`, {
       method: "PUT",
@@ -337,11 +393,12 @@ document.getElementById("saveIncomeBtn").addEventListener("click", async () => {
       })
     });
 
+    document.getElementById("incomeDialog").close();
     await loadAll();
     showToast("Đã cập nhật thu nhập");
   } catch (error) {
     FieldErrors.report(error, {amount:incomeInput}, incomeInput);
-  }
+  } finally { button.disabled = false; }
 });
 
 expenseForm.addEventListener("submit", async event => {
@@ -391,7 +448,7 @@ monthPicker.addEventListener("change", async () => {
 });
 
 document.getElementById("clearBtn").addEventListener("click", async () => {
-  if (!confirm("Xoá toàn bộ dữ liệu của tháng này?")) return;
+  if (!await confirmDelete("Xóa toàn bộ thu nhập và chi tiêu của tháng đang chọn trong sổ này?")) return;
 
   try {
     await api(`/api/months/${monthPicker.value}`, {
@@ -417,6 +474,8 @@ let invitationSnapshot = "";
 function showAuth() {
   accountVersion++;
   clearInterval(invitationTimer);
+  clearInterval(ledgerTimer);
+  ledgerTimer = null;
   location.replace("/login" + location.hash);
 }
 
@@ -428,6 +487,8 @@ async function showDashboard(user) {
   await initializeDashboardData();
   clearInterval(invitationTimer);
   invitationTimer = setInterval(pollInvitations, 3000);
+  clearInterval(ledgerTimer);
+  ledgerTimer = setInterval(pollLedger, 5000);
   document.dispatchEvent(new Event("account-ready"));
 }
 
@@ -463,6 +524,7 @@ document.getElementById("avatarInput").addEventListener("change", async event =>
 
 document.getElementById("removeAvatarBtn").addEventListener("click", async event => {
   const button = event.currentTarget;
+  if (!await confirmDelete("Xóa ảnh đại diện của bạn?")) return;
   const version = accountVersion;
   button.disabled = true;
   try {
@@ -622,7 +684,8 @@ document.getElementById("invitations").addEventListener("click", async event => 
 document.getElementById("memberList").addEventListener("click", async event => {
   const button = event.target.closest("[data-remove]");
   const group = selectedGroup();
-  if (!button || !group || !confirm("Xóa thành viên khỏi nhóm? Thu chi đã ghi vào sổ chung vẫn được giữ lại.")) return;
+  if (!button || !group) return;
+  if (!await confirmDelete("Xóa thành viên khỏi nhóm? Thu chi đã ghi vào sổ chung vẫn được giữ lại.")) return;
   try {
     await api(`/api/groups/${group.id}/members/${button.dataset.remove}`, {method: "DELETE"});
     await renderGroupDetails();

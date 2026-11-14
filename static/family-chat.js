@@ -16,6 +16,14 @@
     input.focus();log.scrollTop=log.scrollHeight;
   });
   document.getElementById("closeFamilyChat").addEventListener("click",()=>{closeChat();launcher.focus();});
+  let outsideStart = false;
+  document.addEventListener("pointerdown", event => {
+    outsideStart = panel.open && !panel.contains(event.target) && !launcher.contains(event.target);
+  });
+  document.addEventListener("click", event => {
+    if (outsideStart && panel.open && !panel.contains(event.target) && !launcher.contains(event.target)) closeChat();
+    outsideStart = false;
+  });
   panel.addEventListener("keydown",event=>{if(event.key==="Escape"){event.preventDefault();closeChat();launcher.focus();}});
   const log = document.getElementById("chatMessages");
   const form = document.getElementById("chatForm");
