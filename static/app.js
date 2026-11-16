@@ -16,6 +16,26 @@ let editingId = null;
 let familyGroups = [];
 let ledgerStorageKey = "";
 let preferredLedger = "";
+let hiddenMetricAmounts = {incomeValue: true, expenseValue: true, remainingValue: true};
+const metricAmounts = {};
+const metricLabels = {incomeValue: "Thu nhập tổng", expenseValue: "Tổng chi", remainingValue: "Còn lại"};
+
+function renderMetricAmount(id) {
+  const hidden = Boolean(hiddenMetricAmounts[id]);
+  document.getElementById(id).textContent = hidden ? "••••••" : (metricAmounts[id] || money(0));
+  const button = document.querySelector(`[data-toggle-amount="${id}"]`);
+  button.setAttribute("aria-pressed", String(hidden));
+  button.setAttribute("aria-label", `${hidden ? "Hiện" : "Ẩn"} số tiền ${metricLabels[id]}`);
+  button.title = button.getAttribute("aria-label");
+}
+
+document.querySelectorAll("[data-toggle-amount]").forEach(button => {
+  button.addEventListener("click", () => {
+    const id = button.dataset.toggleAmount;
+    hiddenMetricAmounts[id] = !hiddenMetricAmounts[id];
+    renderMetricAmount(id);
+  });
+});
 const ledgerPicker = document.getElementById("ledgerPicker");
 let loadVersion = 0;
 let historyItems = [];
@@ -251,12 +271,13 @@ async function initializeDashboardData() {
 document.getElementById("retryDashboard").addEventListener("click", initializeDashboardData);
 
 function renderSummary(summary) {
-  document.getElementById("incomeValue").textContent = money(summary.income);
-  document.getElementById("expenseValue").textContent = money(summary.total_expense);
+  metricAmounts.incomeValue = money(summary.income);
+  metricAmounts.expenseValue = money(summary.total_expense);
+  metricAmounts.remainingValue = money(summary.remaining);
+  Object.keys(metricLabels).forEach(renderMetricAmount);
   document.getElementById("expenseCount").textContent = `${summary.expense_count} khoản chi`;
 
   const remaining = document.getElementById("remainingValue");
-  remaining.textContent = money(summary.remaining);
   remaining.className = summary.remaining >= 0 ? "positive" : "negative";
 
   document.getElementById("savingRate").textContent = `${summary.saving_rate.toFixed(1)}%`;
@@ -483,6 +504,8 @@ function showAuth() {
 
 async function showDashboard(user) {
   ledgerStorageKey = `heo-dat:ledger:${user.username}`;
+  hiddenMetricAmounts = {incomeValue: true, expenseValue: true, remainingValue: true};
+  Object.keys(metricLabels).forEach(renderMetricAmount);
   try { preferredLedger = localStorage.getItem(ledgerStorageKey) || ""; }
   catch (_) { preferredLedger = ""; }
   document.getElementById("currentUser").textContent = user.username;

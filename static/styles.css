@@ -1170,3 +1170,10 @@ body:not(.auth-page) > .music-player { position: fixed; left: 16px; right: auto;
   .shadcn-income-button .income-action-full { display: none; }
   .shadcn-income-button .income-action-short { display: inline; }
 }
+.metric-label { display: flex; align-items: center; justify-content: space-between; gap: 4px; min-width: 0; }
+.metric-label > span { min-width: 0; overflow-wrap: anywhere; }
+.amount-visibility { display: inline-grid; place-items: center; flex-shrink: 0; width: 36px; height: 36px; padding: 8px; border: 0; border-radius: 10px; color: #4b586f; background: #ffffff66; cursor: pointer; }
+.amount-visibility:hover { background: #ffffffaa; }
+.amount-visibility:focus-visible { outline: 2px solid #7964da; outline-offset: 2px; }
+.amount-eye-slash { display: none; }
+.amount-visibility[aria-pressed="true"] .amount-eye-slash { display: block; }
