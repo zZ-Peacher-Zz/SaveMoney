@@ -6,7 +6,7 @@
   <title>Heo &#272;&#7845;t - Thu chi gia &#273;&#236;nh</title>
   <link rel="stylesheet" href="/static/vendor/bootstrap/bootstrap.min.css?v=6.0.0-alpha.1">
   <link rel="stylesheet" href="/static/calendar.css?v=2">
-  <link rel="stylesheet" href="/static/styles.css?v=20261116-amount-privacy-1">
+  <link rel="stylesheet" href="/static/styles.css?v=20261116-avatar-menu-1">
 </head>
 <body>
   {% include "christmas_effects.html" %}
@@ -15,26 +15,20 @@
       {% include "brand.html" %}
       <h1 class="sr-only">Heo &#272;&#7845;t - Thu chi gia &#273;&#236;nh</h1>
       <div class="header-actions">
-        <div class="account-actions">
-          <button id="avatarBtn" type="button" class="avatar-button" aria-label="Thay đổi ảnh đại diện" title="Thay đổi ảnh đại diện">
-            <img id="avatarImage" class="hidden" alt="Ảnh đại diện">
-            <span id="avatarInitial" aria-hidden="true"></span>
+        <div class="account-actions avatar-account">
+          <button id="avatarBtn" type="button" class="avatar-button" aria-label="M&#7903; t&#249;y ch&#7885;n t&#224;i kho&#7843;n" title="T&#224;i kho&#7843;n" aria-expanded="false" aria-controls="accountMenu">
+            <img id="avatarImage" class="hidden" alt="&#7842;nh &#273;&#7841;i di&#7879;n"><span id="avatarInitial" aria-hidden="true"></span>
           </button>
-        </div>
-        <details class="profile-options">
-          <summary>T&#224;i kho&#7843;n</summary>
-          <div class="profile-menu">
-          <strong id="currentUser"></strong>
-          <button id="logoutBtn" class="btn btn-subtle button logout-button" type="button">Đăng xuất</button>
-
-        <div class="avatar-controls">
-          <label for="avatarInput" class="avatar-label">Đổi ảnh đại diện</label>
-          <input id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden">
-          <button id="removeAvatarBtn" type="button" class="icon-button hidden">Xóa ảnh</button>
-        </div>
-        <small class="avatar-help">PNG, JPG, WebP · tối đa 5 MB</small>
+          <div id="accountMenu" class="profile-menu" hidden>
+            <strong id="currentUser"></strong>
+            <button id="openPasswordDialog" type="button" class="account-menu-item" aria-haspopup="dialog" aria-controls="passwordDialog">&#272;&#7893;i m&#7853;t kh&#7849;u</button>
+            <button id="changeAvatarBtn" type="button" class="account-menu-item">&#272;&#7893;i &#7843;nh &#273;&#7841;i di&#7879;n</button>
+            <button id="removeAvatarBtn" type="button" class="account-menu-item hidden">X&#243;a &#7843;nh &#273;&#7841;i di&#7879;n</button>
+            <small class="avatar-help">PNG, JPG, WebP &#183; t&#7889;i &#273;a 5 MB</small>
+            <button id="logoutBtn" type="button" class="account-menu-item account-logout">&#272;&#259;ng xu&#7845;t</button>
           </div>
-        </details>
+          <input id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden">
+        </div>
         <label class="month-label header-month">
           <span class="sr-only">Tháng</span>
           <input class="form-control" id="monthPicker" type="month">
@@ -163,7 +157,7 @@
             </div>
           </div>
 
-          <p id="historyFilterStatus" role="status" aria-live="polite"></p>
+          <div class="history-summary-toolbar"><p id="historyFilterStatus" role="status" aria-live="polite"></p><button id="toggleAllHistoryDays" type="button" class="btn btn-subtle button ghost compact" aria-controls="expenseBody" disabled>Thu gọn tất cả</button></div>
 
           <div id="emptyState" class="empty-state">
             <div class="empty-icon">₫</div>
@@ -191,6 +185,18 @@
     </main>
   </div>
 
+  <dialog id="passwordDialog" class="family-dialog finance-dialog" aria-labelledby="passwordDialogTitle">
+    <header class="family-dialog-header"><h2 id="passwordDialogTitle">&#272;&#7893;i m&#7853;t kh&#7849;u</h2><button id="closePasswordDialog" type="button" class="btn btn-subtle button ghost">&#272;&#243;ng</button></header>
+    <div class="family-dialog-content">
+      <form id="changePasswordForm">
+        <label><span>M&#7853;t kh&#7849;u hi&#7879;n t&#7841;i</span><input id="currentPassword" class="form-control" type="password" autocomplete="current-password" required maxlength="128"></label>
+        <label><span>M&#7853;t kh&#7849;u m&#7899;i</span><input id="newPassword" class="form-control" type="password" autocomplete="new-password" required minlength="8" maxlength="128"></label>
+        <label><span>Nh&#7853;p l&#7841;i m&#7853;t kh&#7849;u m&#7899;i</span><input id="confirmNewPassword" class="form-control" type="password" autocomplete="new-password" required minlength="8" maxlength="128"></label>
+        <p class="password-help">T&#7889;i thi&#7875;u 8 k&#253; t&#7921;. &#272;&#7893;i m&#7853;t kh&#7849;u s&#7869; &#273;&#259;ng xu&#7845;t c&#225;c phi&#234;n kh&#225;c.</p>
+        <button id="savePasswordBtn" type="submit" class="btn btn-solid button primary">L&#432;u m&#7853;t kh&#7849;u</button>
+      </form>
+    </div>
+  </dialog>
   <dialog id="deleteConfirmDialog" class="family-dialog finance-dialog" aria-labelledby="deleteConfirmTitle" aria-describedby="deleteConfirmMessage">
     <header class="family-dialog-header"><h2 id="deleteConfirmTitle">Xác nhận xóa</h2><button id="closeDeleteConfirm" type="button" class="btn btn-subtle button ghost">Đóng</button></header>
     <div class="family-dialog-content">
@@ -269,11 +275,11 @@
   <button id="familyChatLauncher" class="chat-launcher" type="button" aria-label="Ch&#7885;n s&#7893; gia &#273;&#236;nh &#273;&#7875; chat" aria-haspopup="dialog" aria-controls="familyChat" aria-expanded="false" disabled><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-3 2V11.5A8.5 8.5 0 0 1 9.5 3h3a8.5 8.5 0 0 1 8.5 8.5Z"/><path d="M6 11h2m3 0h2m3 0h2"/></svg></button>
   <div id="toast" class="app-toast hidden"></div>
   <script src="/static/field-errors.js?v=2"></script>
-  <script src="/static/family-dialog.js?v=5"></script>
+  <script src="/static/family-dialog.js?v=6"></script>
   <script src="/static/money-input.js?v=1"></script>
   <script src="/static/avatar-crop.js"></script>
   <script src="/static/ledger-picker.js?v=1"></script>
-  <script src="/static/app.js?v=20261116-amount-privacy-2"></script>
+  <script src="/static/app.js?v=20261116-avatar-menu-1"></script>
   <script src="/static/family-chat.js?v=8"></script>
   <script defer src="/static/calendar.js?v=3"></script>
   <script src="/static/presence.js?v=1"></script>

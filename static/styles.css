@@ -1177,3 +1177,16 @@ body:not(.auth-page) > .music-player { position: fixed; left: 16px; right: auto;
 .amount-visibility:focus-visible { outline: 2px solid #7964da; outline-offset: 2px; }
 .amount-eye-slash { display: none; }
 .amount-visibility[aria-pressed="true"] .amount-eye-slash { display: block; }
+.history-summary-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-bottom: 16px; }
+.history-summary-toolbar #historyFilterStatus { margin: 0; flex: 1 1 180px; }
+#toggleAllHistoryDays { flex-shrink: 0; min-height: 40px; padding: 8px 12px; }
+.avatar-account { position: relative; }
+.avatar-account .profile-menu { z-index: 70; top: calc(100% + 12px); width: 260px; max-width: calc(100vw - 24px); background: #fff; color: var(--text); }
+.avatar-account .profile-menu[hidden] { display: none; }
+.account-menu-item { display: block; width: 100%; min-height: 44px; padding: 10px 12px; border: 0; border-radius: 10px; background: transparent; text-align: left; color: var(--text); font: inherit; cursor: pointer; }
+.account-menu-item:hover, .account-menu-item:focus-visible { background: #eee8ff; color: #624bb3; }
+.avatar-account .account-logout { color: #c13b59; border-top: 1px solid var(--line); border-radius: 0; margin: 12px 0 0 !important; }
+.password-help { color: var(--muted); font-size: 14px; margin: 0; }
+@media (max-width: 920px) {
+  .header { grid-template-columns: minmax(0, 1fr) auto; }
+}

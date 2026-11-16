@@ -47,6 +47,24 @@ const historyTo = document.getElementById("historyTo");
 const historyFilterStatus = document.getElementById("historyFilterStatus");
 let historyScope = "";
 const collapsedHistoryDays = new Set();
+const toggleAllHistoryDays = document.getElementById("toggleAllHistoryDays");
+function updateHistoryDayToggle() {
+  const days = [...expenseBody.querySelectorAll(".day-toggle")];
+  const allCollapsed = days.length > 0 && days.every(button => button.getAttribute("aria-expanded") === "false");
+  toggleAllHistoryDays.disabled = days.length === 0;
+  toggleAllHistoryDays.textContent = allCollapsed ? "Mở rộng tất cả" : "Thu gọn tất cả";
+}
+toggleAllHistoryDays.addEventListener("click", () => {
+  const buttons = [...expenseBody.querySelectorAll(".day-toggle")];
+  const collapse = buttons.some(button => button.getAttribute("aria-expanded") === "true");
+  for (const button of buttons) {
+    if (collapse) collapsedHistoryDays.add(button.dataset.day);
+    else collapsedHistoryDays.delete(button.dataset.day);
+    button.setAttribute("aria-expanded", String(!collapse));
+  }
+  expenseBody.querySelectorAll("[data-expense-day]").forEach(row => { row.hidden = collapse; });
+  updateHistoryDayToggle();
+});
 let dashboardSnapshot = "";
 let ledgerTimer = null;
 let ledgerPolling = false;
@@ -361,12 +379,14 @@ function renderExpenses(items) {
       expenseBody.querySelectorAll("[data-expense-day]").forEach(row => {
         if (row.dataset.expenseDay === day) row.hidden = collapsed;
       });
+      updateHistoryDayToggle();
     });
   });
 
   expenseBody.querySelectorAll("[data-action='edit']").forEach(button => {
     button.addEventListener("click", () => editExpense(Number(button.dataset.id), items));
   });
+  updateHistoryDayToggle();
 
   expenseBody.querySelectorAll("[data-action='delete']").forEach(button => {
     button.addEventListener("click", () => deleteExpense(Number(button.dataset.id)));
@@ -529,7 +549,52 @@ function renderAvatar(url) {
   else image.removeAttribute("src");
 }
 
-document.getElementById("avatarBtn").addEventListener("click", () => document.getElementById("avatarInput").click());
+const accountMenu = document.getElementById("accountMenu");
+const avatarButton = document.getElementById("avatarBtn");
+function closeAccountMenu() {
+  accountMenu.hidden = true;
+  avatarButton.setAttribute("aria-expanded", "false");
+}
+avatarButton.addEventListener("click", () => {
+  accountMenu.hidden = !accountMenu.hidden;
+  avatarButton.setAttribute("aria-expanded", String(!accountMenu.hidden));
+});
+document.addEventListener("pointerdown", event => {
+  if (!event.target.closest(".avatar-account")) closeAccountMenu();
+});
+document.querySelector(".avatar-account").addEventListener("keydown", event => {
+  if (event.key === "Escape") { closeAccountMenu(); avatarButton.focus(); }
+});
+document.querySelector(".avatar-account").addEventListener("focusout", event => {
+  if (!event.currentTarget.contains(event.relatedTarget)) closeAccountMenu();
+});
+document.getElementById("changeAvatarBtn").addEventListener("click", () => {
+  closeAccountMenu(); document.getElementById("avatarInput").click();
+});
+document.getElementById("openPasswordDialog").addEventListener("click", closeAccountMenu);
+const passwordForm = document.getElementById("changePasswordForm");
+document.getElementById("passwordDialog").addEventListener("close", () => passwordForm.reset());
+passwordForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  if (!FieldErrors.validate(passwordForm)) return;
+  const current = document.getElementById("currentPassword");
+  const next = document.getElementById("newPassword");
+  const confirm = document.getElementById("confirmNewPassword");
+  if (next.value !== confirm.value) {
+    FieldErrors.set(confirm, "Mật khẩu nhập lại không khớp."); confirm.focus(); return;
+  }
+  if (current.value === next.value) {
+    FieldErrors.set(next, "Mật khẩu mới phải khác mật khẩu hiện tại."); next.focus(); return;
+  }
+  const button = document.getElementById("savePasswordBtn");
+  button.disabled = true;
+  try {
+    await api("/api/auth/password", {method: "PUT", body: JSON.stringify({current_password: current.value, new_password: next.value})});
+    document.getElementById("passwordDialog").close();
+    showToast("Đã đổi mật khẩu. Các phiên đăng nhập khác đã được đăng xuất.");
+  } catch (error) { FieldErrors.report(error, {current_password: current, new_password: next}, current); }
+  finally { button.disabled = false; }
+});
 document.getElementById("avatarInput").addEventListener("change", async event => {
   const file = event.target.files[0];
   if (!file) return;

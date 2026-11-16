@@ -10,10 +10,24 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.user import LoginSession, User, UserAvatar
-from app.schemas.auth import Credentials, Registration
+from app.schemas.auth import Credentials, Registration, PasswordChange
 from app.security import COOKIE_NAME, current_user, hash_password, start_session
 
 router = APIRouter()
+
+
+@router.put("/api/auth/password")
+def change_password(payload: PasswordChange, response: Response,
+                    user: User = Depends(current_user), db: Session = Depends(get_db)):
+    salt, stored = user.password_hash.split(":")
+    if not secrets.compare_digest(hash_password(payload.current_password, salt), stored):
+        raise HTTPException(status_code=400, detail="Mật khẩu hiện tại không đúng.")
+    if payload.current_password == payload.new_password:
+        raise HTTPException(status_code=400, detail="Mật khẩu mới phải khác mật khẩu hiện tại.")
+    salt = secrets.token_hex(16)
+    user.password_hash = salt + ":" + hash_password(payload.new_password, salt)
+    db.execute(delete(LoginSession).where(LoginSession.user_id == user.id))
+    return start_session(response, user, db)
 
 
 @router.post("/api/auth/register", status_code=201)
