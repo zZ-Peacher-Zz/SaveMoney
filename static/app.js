@@ -103,10 +103,9 @@ function filterHistory() {
     (!historyTo.value || item.expense_date <= historyTo.value) &&
     (!query || normalizeSearch([item.note, item.category, item.username].join(" ")).includes(query)));
   renderExpenses(filtered);
-  const total = filtered.reduce((sum, item) => sum + Number(item.amount), 0);
   historyFilterStatus.textContent = invalidRange
     ? "Ng\u00e0y b\u1eaft \u0111\u1ea7u ph\u1ea3i tr\u01b0\u1edbc ho\u1eb7c b\u1eb1ng ng\u00e0y k\u1ebft th\u00fac."
-    : `${filtered.length}/${historyItems.length} giao d\u1ecbch \u00b7 T\u1ed5ng k\u1ebft qu\u1ea3: ${money(total)}`;
+    : "";
   if (!filtered.length) {
     emptyState.querySelector("strong").textContent = historyItems.length ? "Kh\u00f4ng c\u00f3 k\u1ebft qu\u1ea3 ph\u00f9 h\u1ee3p" : "Ch\u01b0a c\u00f3 kho\u1ea3n chi";
     emptyState.querySelector("span").textContent = historyItems.length ? "Th\u1eed \u0111\u1ed5i ho\u1eb7c x\u00f3a b\u1ed9 l\u1ecdc." : "Th\u00eam giao d\u1ecbch \u0111\u1ea7u ti\u00ean \u0111\u1ec3 b\u1eaft \u0111\u1ea7u theo d\u00f5i th\u00e1ng n\u00e0y.";
@@ -342,11 +341,13 @@ function renderExpenses(items) {
   expenseBody.innerHTML = [...days.keys()].sort().reverse().map(day => {
     const expenses = days.get(day);
     const total = expenses.reduce((sum, item) => sum + Number(item.amount), 0);
+    const weekday = new Date(`${day}T12:00:00`).getDay();
+    const weekdayLabel = weekday === 0 ? "Chủ nhật" : `Thứ ${weekday + 1}`;
     return `
-    <tr class="day-heading">
+    <tr class="day-heading${weekday === 6 ? " day-saturday" : weekday === 0 ? " day-sunday" : ""}">
       <th colspan="6">
         <button type="button" class="day-summary day-toggle" data-day="${day}" aria-expanded="${!collapsedHistoryDays.has(day)}" aria-controls="${expenses.map(item => `history-expense-${item.id}`).join(" ")}">
-          <span class="day-copy"><span>${formatDate(day)}</span><small>${expenses.length} khoản chi</small></span>
+          <span class="day-copy"><span>${weekdayLabel} · ${formatDate(day)}</span><small>${expenses.length} khoản chi</small></span>
           <span class="day-total">${money(total)}</span>
           <svg class="day-chevron" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
         </button>
@@ -692,9 +693,6 @@ async function renderGroupDetails() {
   document.getElementById("inviteForm").classList.toggle("hidden", !group?.is_owner);
   document.getElementById("incomeTitle").textContent = group ? "Thu nhập bạn góp vào gia đình" : "Thu nhập tháng";
   document.getElementById("incomeHint").classList.toggle("hidden", !group);
-  document.getElementById("ledgerHint").textContent = group
-    ? `Đang ghi vào ${group.name}. Thành viên xem được sổ chung; bạn chỉ sửa khoản chi của mình, chủ nhóm được quản lý toàn bộ.`
-    : "Chỉ bạn xem được sổ cá nhân.";
   document.getElementById("clearBtn").classList.toggle("hidden", !!group && !group.is_owner);
   document.getElementById("memberList").innerHTML = "";
   if (!group) return;

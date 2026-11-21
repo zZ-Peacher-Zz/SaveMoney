@@ -11,7 +11,7 @@ if (incomeButton) {
   incomeButton.replaceWith(mount);
   createRoot(mount).render(
     <Button id="openIncomeDialog" type="button" variant="default"
-      className="shadcn-income-button min-h-11 rounded-xl px-3 text-base"
+      className="button primary income-action shadcn-income-button min-h-11 rounded-xl px-3 text-base"
       aria-label="Thêm thu nhập" aria-haspopup="dialog" aria-controls="incomeDialog">
       <span className="income-action-full">Thêm thu nhập</span>
       <span className="income-action-short">Thêm thu</span>

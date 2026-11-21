@@ -1190,3 +1190,40 @@ body:not(.auth-page) > .music-player { position: fixed; left: 16px; right: auto;
 @media (max-width: 920px) {
   .header { grid-template-columns: minmax(0, 1fr) auto; }
 }
+.history-summary-toolbar { justify-content: flex-end; }
+#historyFilterStatus:empty { display: none; }
+.table-wrap .history-table .day-heading th { border-radius: 12px; }
+.table-wrap .history-table .day-saturday th { background: #e5f0ff; color: #245b99; }
+.table-wrap .history-table .day-sunday th { background: #fff0e5; color: #a14f22; }
+.day-saturday .day-toggle, .day-sunday .day-toggle { color: inherit; }
+.day-saturday .day-copy small, .day-sunday .day-copy small { color: inherit; opacity: .8; }
+#historyFilters #clearBtn { width: 40px; justify-self: start; }
+@media (max-width: 1100px) {
+  .history-panel > .panel-title { display: flex; flex-direction: row; align-items: center; flex-wrap: nowrap; gap: 8px; }
+  .history-panel > .panel-title > div:first-child { flex: 1; min-width: 0; }
+  .history-panel > .panel-title.split > .toolbar { flex: 0 0 auto; flex-wrap: nowrap; align-self: center; width: max-content; gap: 4px; }
+  .history-panel .toolbar .history-icon { flex: 0 0 36px; width: 36px; height: 40px; padding: 8px; }
+  .table-wrap .history-table .day-heading { margin-top: 24px; margin-bottom: 8px; }
+  .table-wrap .history-table .day-heading:first-child { margin-top: 0; }
+}
+/* Give each history entry room without changing calendar table spacing. */
+@media (min-width: 1101px) {
+  .history-table { border-collapse: separate; border-spacing: 0 8px; }
+  .history-table tbody tr:not(.day-heading) td { padding: 16px 12px; }
+}
+@media (max-width: 1100px) {
+  .table-wrap .history-table tr:not(.day-heading) { margin-bottom: 16px; padding: 16px; row-gap: 12px; }
+}
+.overview-grid .family-panel { display: flex; flex-direction: column; gap: 16px; }
+.family-panel > .panel-title { margin-bottom: 0; }
+.family-panel .ledger-field { margin: 0 0 4px; }
+.family-panel #openFamilyManager { margin-top: 4px; }
+.family-panel #invitations:empty { display: none; }
+.income-button-mount .income-action { margin-top: 0; }
+.metric-card .shadcn-income-button { font-weight: 650; border-radius: 12px; min-height: 44px; }
+.metric-card .income-button-mount { align-self: flex-start; }
+.metric-card .income-button-mount .shadcn-income-button { display: inline-flex; align-items: center; justify-content: center; text-align: center; }
+.metric-card .shadcn-income-button > span { margin: 0; padding: 0; text-align: center; }
+.metric-card .income-action > span { margin: 0; padding: 0; }
+.metric-card .income-button-mount .shadcn-income-button.primary { color: #fff; background: linear-gradient(#8877f5, #6355dc); box-shadow: 0 5px 0 #413695, inset 0 2px 0 #b5a9ff; }
+.metric-card .income-button-mount .shadcn-income-button.primary:active { transform: translateY(3px); box-shadow: 0 1px 0 #413695; }
