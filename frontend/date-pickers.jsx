@@ -87,7 +87,7 @@ function DatePicker({input, wrapper, monthOnly}) {
     <button type="button" className="shadcn-calendar-close" onClick={() => {setOpen(false);input.focus();}}>Đóng lịch</button>
   </div>;
 }
-for (const id of ["monthPicker", "dateInput", "historyFrom", "historyTo"]) {
+for (const id of ["monthPicker", "dateInput", "historyFrom", "historyTo", "savingsGoalMonth"]) {
   const input = document.getElementById(id);
   if (!input) continue;
   const value = input.value;
@@ -102,5 +102,5 @@ for (const id of ["monthPicker", "dateInput", "historyFrom", "historyTo"]) {
   wrapper.className = "shadcn-date-field";
   input.before(wrapper);wrapper.append(input);
   const mount = document.createElement("span");wrapper.append(mount);
-  createRoot(mount).render(<DatePicker input={input} wrapper={wrapper} monthOnly={id === "monthPicker"} />);
+  createRoot(mount).render(<DatePicker input={input} wrapper={wrapper} monthOnly={id === "monthPicker" || id === "savingsGoalMonth"} />);
 }

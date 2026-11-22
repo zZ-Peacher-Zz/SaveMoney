@@ -18,6 +18,7 @@ let ledgerStorageKey = "";
 let preferredLedger = "";
 let hiddenMetricAmounts = {incomeValue: true, expenseValue: true, remainingValue: true};
 const metricAmounts = {};
+let savingsSummary = null;
 const metricLabels = {incomeValue: "Thu nhập tổng", expenseValue: "Tổng chi", remainingValue: "Còn lại"};
 
 function renderMetricAmount(id) {
@@ -27,6 +28,7 @@ function renderMetricAmount(id) {
   button.setAttribute("aria-pressed", String(hidden));
   button.setAttribute("aria-label", `${hidden ? "Hiện" : "Ẩn"} số tiền ${metricLabels[id]}`);
   button.title = button.getAttribute("aria-label");
+  if (id === "remainingValue" && savingsSummary) renderSavingsGoal(savingsSummary);
 }
 
 document.querySelectorAll("[data-toggle-amount]").forEach(button => {
@@ -170,7 +172,7 @@ function showToast(message) {
 }
 
 async function api(url, options = {}) {
-  if (url.startsWith("/api/months/") || url.startsWith("/api/expenses")) url = ledgerUrl(url);
+  if (url.startsWith("/api/months/") || url.startsWith("/api/years/") || url.startsWith("/api/expenses")) url = ledgerUrl(url);
   const response = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
@@ -288,6 +290,7 @@ async function initializeDashboardData() {
 document.getElementById("retryDashboard").addEventListener("click", initializeDashboardData);
 
 function renderSummary(summary) {
+  savingsSummary = summary;
   metricAmounts.incomeValue = money(summary.income);
   metricAmounts.expenseValue = money(summary.total_expense);
   metricAmounts.remainingValue = money(summary.remaining);
@@ -304,6 +307,107 @@ function renderSummary(summary) {
     !(summary.income > 0 && summary.total_expense > summary.income)
   );
 }
+
+const savingsPeriod = document.getElementById("savingsGoalPeriod");
+const savingsMonth = document.getElementById("savingsGoalMonth");
+const savingsYear = document.getElementById("savingsGoalYear");
+for (let year = 2100; year >= 1970; year--) savingsYear.add(new Option(String(year), String(year)));
+function lockSavingsPeriod(disabled) {
+  for (const input of [savingsPeriod, savingsMonth, savingsYear]) input.disabled = disabled;
+}
+let savingsRequestVersion = 0;
+let savingsPeriodReady = false;
+function savingsPeriodUrl() {
+  if (savingsPeriod.value === "year") return `/api/years/${savingsYear.value}`;
+  return `/api/months/${savingsMonth.value}`;
+}
+function renderSavingsGoal(summary, period = "current", resetInput = false) {
+  if (savingsPeriod.value !== period) return;
+  if (!resetInput && document.getElementById("savingsGoalDialog").open) return;
+  savingsPeriodReady = true;
+  document.getElementById("savingsGoalLoadStatus").classList.add("hidden");
+  document.getElementById("savingsGoalCard").classList.remove("hidden");
+  const target = Number(summary.savings_goal || 0);
+  const saved = Math.max(0, Number(summary.remaining || 0));
+  const percent = target ? Math.min(100, saved / target * 100) : 0;
+  const scope = `${summary.year ? `Năm ${summary.year}` : summary.month.split("-").reverse().join("/")} · ${selectedGroup()?.name || "Cá nhân"}`;
+  document.getElementById("savingsGoalScope").textContent = scope;
+  document.getElementById("savingsGoalFormScope").textContent = scope;
+  document.getElementById("savingsGoalEmpty").classList.toggle("hidden", target > 0);
+  document.getElementById("savingsGoalProgress").classList.toggle("hidden", target <= 0);
+  document.getElementById("savingsGoalForm").classList.toggle("hidden", !summary.can_edit_savings_goal);
+  document.getElementById("savingsGoalDialogTitle").textContent = "Mục tiêu tiết kiệm";
+  document.getElementById("savingsGoalTarget").textContent = `Mục tiêu: ${money(target)}`;
+  document.getElementById("savingsGoalPercent").textContent = `${Math.floor(percent)}%`;
+  document.getElementById("savingsGoalBar").value = percent;
+  const status = document.getElementById("savingsGoalStatus");
+  status.textContent = saved >= target && target > 0 ? "Bạn đã đạt mục tiêu của kỳ này!" : `Còn thiếu ${money(target - saved)} để đạt mục tiêu.`;
+  document.getElementById("savingsGoalExplanation").textContent = summary.year
+    ? "Mục tiêu năm độc lập với mục tiêu tháng. Tiến độ tạm tính từ tổng thu nhập trừ tổng chi tiêu của 12 tháng trong năm."
+    : "Tiến độ tạm tính từ thu nhập trừ chi tiêu của tháng, có thể thay đổi khi phát sinh khoản chi.";
+  document.getElementById("savingsGoalCard").classList.toggle("goal-achieved", target > 0 && saved >= target);
+  document.getElementById("removeSavingsGoal").classList.toggle("hidden", !target || !summary.can_edit_savings_goal);
+  if (resetInput || !document.getElementById("savingsGoalDialog").open) MoneyInput.set(document.getElementById("savingsGoalInput"), target || "");
+}
+
+async function loadSavingsPeriod() {
+  const request = ++savingsRequestVersion;
+  const version = accountVersion;
+  const period = savingsPeriod.value;
+  document.getElementById("savingsGoalMonthField").classList.toggle("hidden", period === "year");
+  document.getElementById("savingsGoalYearField").classList.toggle("hidden", period !== "year");
+  savingsPeriodReady = false;
+  const message = document.getElementById("savingsGoalLoadStatus");
+  message.textContent = "Đang tải mục tiêu...";
+  message.classList.remove("hidden");
+  document.getElementById("savingsGoalCard").classList.add("hidden");
+  document.getElementById("savingsGoalForm").classList.add("hidden");
+  FieldErrors.clear(document.getElementById("savingsGoalInput"));
+  try {
+    const summary = await api(`${savingsPeriodUrl()}/${period === "year" ? "savings-summary" : "summary"}`, {cache: "no-store"});
+    if (request !== savingsRequestVersion || version !== accountVersion || period !== savingsPeriod.value) return;
+    renderSavingsGoal(summary, period, true);
+  } catch (error) {
+    if (request === savingsRequestVersion && version === accountVersion) message.textContent = `Không tải được mục tiêu: ${error.message}. Chọn lại kỳ để thử lại.`;
+  }
+}
+savingsPeriod.addEventListener("change", loadSavingsPeriod);
+savingsMonth.addEventListener("change", loadSavingsPeriod);
+savingsYear.addEventListener("change", loadSavingsPeriod);
+document.getElementById("openSavingsGoal").addEventListener("click", () => {
+  savingsPeriod.value = "current";
+  savingsMonth.value = monthPicker.value;
+  savingsYear.value = monthPicker.value.split("-")[0];
+  loadSavingsPeriod();
+});
+document.getElementById("savingsGoalDialog").addEventListener("close", () => { savingsRequestVersion++; });
+
+document.getElementById("savingsGoalForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const input = document.getElementById("savingsGoalInput");
+  if (!savingsPeriodReady) return;
+  if (!FieldErrors.validate(input)) return;
+  const button = document.getElementById("saveSavingsGoal");
+  button.disabled = true;
+  lockSavingsPeriod(true);
+  try {
+    await api(`${savingsPeriodUrl()}/savings-goal`, {method: "PUT", body: JSON.stringify({amount: MoneyInput.parse(input)})});
+    document.getElementById("savingsGoalDialog").close();
+    await loadAll();
+    showToast("Đã lưu mục tiêu tiết kiệm.");
+  } catch (error) { FieldErrors.report(error, {amount: input}, input); }
+  finally { button.disabled = false; lockSavingsPeriod(false); }
+});
+document.getElementById("removeSavingsGoal").addEventListener("click", async () => {
+  if (!savingsPeriodReady || !await confirmDelete("Bỏ mục tiêu tiết kiệm của kỳ đang xem? Thu chi vẫn được giữ lại.")) return;
+  lockSavingsPeriod(true);
+  try {
+    await api(`${savingsPeriodUrl()}/savings-goal`, {method: "PUT", body: JSON.stringify({amount: 0})});
+    document.getElementById("savingsGoalDialog").close();
+    await loadAll();
+  } catch (error) { showToast(error.message); }
+  finally { lockSavingsPeriod(false); }
+});
 
 function renderBreakdown(summary) {
   if (!summary.categories.length) {
@@ -492,7 +596,7 @@ monthPicker.addEventListener("change", async () => {
 });
 
 document.getElementById("clearBtn").addEventListener("click", async () => {
-  if (!await confirmDelete("Xóa toàn bộ thu nhập và chi tiêu của tháng đang chọn trong sổ này?")) return;
+  if (!await confirmDelete("Xóa toàn bộ thu nhập, chi tiêu và mục tiêu tiết kiệm của tháng đang chọn trong sổ này?")) return;
 
   try {
     await api(`/api/months/${monthPicker.value}`, {

@@ -4,7 +4,8 @@
     ["incomeDialog", "openIncomeDialog", "closeIncomeDialog"],
     ["historyFilterDialog", "openHistoryFilters", "closeHistoryFilters"],
     ["insightDialog", "openInsight", "closeInsight"],
-    ["passwordDialog", "openPasswordDialog", "closePasswordDialog"]
+    ["passwordDialog", "openPasswordDialog", "closePasswordDialog"],
+    ["savingsGoalDialog", "openSavingsGoal", "closeSavingsGoal"]
   ]) {
     const dialog = document.getElementById(dialogId);
     let scrollY = 0;

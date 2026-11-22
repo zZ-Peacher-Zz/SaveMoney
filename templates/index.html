@@ -6,7 +6,7 @@
   <title>Heo &#272;&#7845;t - Thu chi gia &#273;&#236;nh</title>
   <link rel="stylesheet" href="/static/vendor/bootstrap/bootstrap.min.css?v=6.0.0-alpha.1">
   <link rel="stylesheet" href="/static/calendar.css?v=2">
-  <link rel="stylesheet" href="/static/styles.css?v=20261121-income-center-2">
+  <link rel="stylesheet" href="/static/styles.css?v=20261122-savings-periods-1">
 </head>
 <body>
   {% include "christmas_effects.html" %}
@@ -84,6 +84,7 @@
 
     </div>
 
+    <div class="savings-goal-launcher"><button id="openSavingsGoal" type="button" class="btn btn-subtle button secondary" aria-haspopup="dialog" aria-controls="savingsGoalDialog">M&#7909;c ti&#234;u ti&#7871;t ki&#7879;m</button></div>
     <section id="budgetAlert" class="alert hidden">
       Chi tiêu tháng này đã vượt thu nhập.
     </section>
@@ -183,6 +184,29 @@
     </main>
   </div>
 
+  <dialog id="savingsGoalDialog" class="family-dialog finance-dialog" aria-labelledby="savingsGoalDialogTitle">
+    <header class="family-dialog-header"><h2 id="savingsGoalDialogTitle">Đặt mục tiêu tiết kiệm</h2><button id="closeSavingsGoal" type="button" class="btn btn-subtle button ghost">Đóng</button></header>
+    <div class="family-dialog-content">
+      <label class="savings-period-label"><span>Kỳ tiết kiệm</span><select id="savingsGoalPeriod" class="form-control"><option value="current">Theo tháng</option><option value="year">Theo năm</option></select></label>
+      <label id="savingsGoalMonthField" class="savings-period-label"><span>Chọn tháng</span><input id="savingsGoalMonth" class="form-control" type="month" aria-label="Chọn tháng tiết kiệm"></label>
+      <label id="savingsGoalYearField" class="savings-period-label hidden"><span>Chọn năm</span><select id="savingsGoalYear" class="form-control" aria-label="Chọn năm tiết kiệm"></select></label>
+      <p id="savingsGoalLoadStatus" role="status" class="hidden"></p>
+    <section id="savingsGoalCard" class="savings-goal-details" aria-labelledby="savingsGoalDialogTitle">
+      <div class="savings-goal-header"><p id="savingsGoalScope"></p></div>
+      <div id="savingsGoalEmpty"><p>Đặt một mục tiêu nhỏ, để dành cho điều bạn mong muốn.</p></div>
+      <div id="savingsGoalProgress" class="hidden">
+        <div class="savings-goal-numbers"><strong id="savingsGoalTarget"></strong><span id="savingsGoalPercent"></span></div>
+        <progress id="savingsGoalBar" max="100" value="0" aria-label="Tiến độ mục tiêu tiết kiệm"></progress>
+        <p id="savingsGoalStatus" aria-live="polite"></p>
+        <small id="savingsGoalExplanation">Tiến độ tạm tính từ thu nhập trừ chi tiêu của kỳ đang xem.</small>
+      </div>
+    </section>
+<form id="savingsGoalForm">
+      <p id="savingsGoalFormScope" class="sr-only"></p>
+      <label><span>Số tiền muốn tiết kiệm (₫)</span><input id="savingsGoalInput" class="form-control" type="text" inputmode="numeric" data-money-input data-min-amount="1" required placeholder="Ví dụ 3.000.000"></label>
+      <div class="form-actions"><button id="saveSavingsGoal" type="submit" class="btn btn-solid button primary">Lưu mục tiêu</button><button id="removeSavingsGoal" type="button" class="btn btn-subtle button ghost hidden">Bỏ mục tiêu</button></div>
+    </form></div>
+  </dialog>
   <dialog id="passwordDialog" class="family-dialog finance-dialog" aria-labelledby="passwordDialogTitle">
     <header class="family-dialog-header"><h2 id="passwordDialogTitle">&#272;&#7893;i m&#7853;t kh&#7849;u</h2><button id="closePasswordDialog" type="button" class="btn btn-subtle button ghost">&#272;&#243;ng</button></header>
     <div class="family-dialog-content">
@@ -274,13 +298,13 @@
   <button id="familyChatLauncher" class="chat-launcher" type="button" aria-label="Ch&#7885;n s&#7893; gia &#273;&#236;nh &#273;&#7875; chat" aria-haspopup="dialog" aria-controls="familyChat" aria-expanded="false" disabled><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-3 2V11.5A8.5 8.5 0 0 1 9.5 3h3a8.5 8.5 0 0 1 8.5 8.5Z"/><path d="M6 11h2m3 0h2m3 0h2"/></svg></button>
   <div id="toast" class="app-toast hidden"></div>
   <script src="/static/field-errors.js?v=2"></script>
-  <script src="/static/family-dialog.js?v=6"></script>
+  <script src="/static/family-dialog.js?v=7"></script>
   <script src="/static/money-input.js?v=1"></script>
   <script src="/static/avatar-crop.js"></script>
   <script src="/static/ledger-picker.js?v=1"></script>
-  <script src="/static/app.js?v=20261121-history-2"></script>
+  <script src="/static/app.js?v=20261122-savings-calendar-1"></script>
   <script src="/static/family-chat.js?v=8"></script>
-  <script defer src="/static/calendar.js?v=5"></script>
+  <script defer src="/static/calendar.js?v=6"></script>
   <script src="/static/presence.js?v=1"></script>
   {% include "music_player.html" %}
 </body>

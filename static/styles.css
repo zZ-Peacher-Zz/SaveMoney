@@ -1227,3 +1227,32 @@ body:not(.auth-page) > .music-player { position: fixed; left: 16px; right: auto;
 .metric-card .income-action > span { margin: 0; padding: 0; }
 .metric-card .income-button-mount .shadcn-income-button.primary { color: #fff; background: linear-gradient(#8877f5, #6355dc); box-shadow: 0 5px 0 #413695, inset 0 2px 0 #b5a9ff; }
 .metric-card .income-button-mount .shadcn-income-button.primary:active { transform: translateY(3px); box-shadow: 0 1px 0 #413695; }
+.savings-goal-card { margin-bottom: 24px; background: linear-gradient(125deg, #fff, #f2eeff); }
+.savings-goal-header, .savings-goal-numbers { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.savings-goal-header { margin-bottom: 16px; }
+.savings-goal-header > div { min-width: 0; flex: 1; }
+.savings-goal-header h2 { margin: 0 0 8px; }
+#savingsGoalScope { margin: 0; font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
+.savings-goal-numbers { margin-bottom: 12px; }
+.savings-goal-numbers strong { font-size: 20px; overflow-wrap: anywhere; }
+#savingsGoalPercent { color: #624bb3; font-weight: 700; }
+#savingsGoalBar { display: block; width: 100%; height: 12px; border: 0; border-radius: 12px; overflow: hidden; accent-color: #7964da; background: #e5dff6; }
+#savingsGoalBar::-webkit-progress-bar { background: #e5dff6; border-radius: 12px; }
+#savingsGoalBar::-webkit-progress-value { background: linear-gradient(90deg, #a18aef, #7964da); border-radius: 12px; }
+#savingsGoalBar::-moz-progress-bar { background: #7964da; border-radius: 12px; }
+#savingsGoalStatus { margin: 12px 0 8px; }
+#savingsGoalProgress small { color: var(--muted); font-size: 12px; }
+#savingsGoalEmpty p, #savingsGoalFormScope { margin: 0; color: var(--muted); }
+.goal-achieved { border-color: #a7dbc1; background: linear-gradient(125deg, #fff, #e3f8ec); }
+.is-loading #savingsGoalCard { display: none; }
+@media (max-width: 580px) {
+  .savings-goal-header { align-items: flex-start; }
+  .savings-goal-header > div { flex-basis: 100%; }
+  #openSavingsGoal { width: 100%; }
+}
+.savings-goal-launcher { display: flex; justify-content: flex-end; margin-bottom: 24px; }
+.savings-goal-details { margin-bottom: 24px; padding: 16px; border-radius: 16px; background: #f4f0ff; }
+.savings-goal-details.goal-achieved { background: #e3f8ec; }
+.is-loading .savings-goal-launcher { display: none; }
+.savings-period-label { display: grid; gap: 8px; margin-bottom: 16px; font-size: 14px; }
+#savingsGoalLoadStatus { color: var(--muted); margin-bottom: 16px; }
