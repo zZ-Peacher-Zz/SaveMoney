@@ -211,6 +211,14 @@ function defaultDate() {
   return `${monthPicker.value}-01`;
 }
 
+const editExpenseDialog = document.getElementById("editExpenseDialog");
+const expenseFormHome = expenseForm.parentElement;
+editExpenseDialog.addEventListener("close", () => {
+  expenseFormHome.append(expenseForm);
+  resetForm();
+  expenseForm.querySelectorAll("input, select, textarea").forEach(FieldErrors.clear);
+});
+
 function resetForm() {
   editingId = null;
   expenseForm.reset();
@@ -508,12 +516,11 @@ async function editExpense(id, items) {
   MoneyInput.set(amountInput, item.amount);
   noteInput.value = item.note || "";
 
-  document.getElementById("formTitle").textContent = "Sửa khoản chi";
   document.getElementById("submitBtn").textContent = "Lưu thay đổi";
   cancelEditBtn.classList.remove("hidden");
 
-  expenseForm.scrollIntoView({ behavior: "smooth", block: "center" });
-  amountInput.focus({ preventScroll: true });
+  expenseForm.querySelectorAll("input, select, textarea").forEach(FieldErrors.clear);
+  document.getElementById("editExpenseContent").append(expenseForm);
 }
 
 async function deleteExpense(id) {
@@ -581,6 +588,7 @@ expenseForm.addEventListener("submit", async event => {
       showToast("Đã thêm khoản chi");
     }
 
+    if (editExpenseDialog.open) editExpenseDialog.close();
     resetForm();
     await loadAll();
   } catch (error) {
@@ -588,7 +596,7 @@ expenseForm.addEventListener("submit", async event => {
   }
 });
 
-cancelEditBtn.addEventListener("click", resetForm);
+cancelEditBtn.addEventListener("click", () => editExpenseDialog.close());
 
 monthPicker.addEventListener("change", async () => {
   resetForm();

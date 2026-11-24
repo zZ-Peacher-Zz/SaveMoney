@@ -184,6 +184,10 @@
     </main>
   </div>
 
+  <dialog id="editExpenseDialog" class="family-dialog finance-dialog" aria-labelledby="editExpenseTitle">
+    <header class="family-dialog-header"><h2 id="editExpenseTitle">Sửa khoản chi</h2><button id="closeEditExpense" type="button" class="btn btn-subtle button ghost">Đóng</button></header>
+    <div id="editExpenseContent" class="family-dialog-content"></div>
+  </dialog>
   <dialog id="savingsGoalDialog" class="family-dialog finance-dialog" aria-labelledby="savingsGoalDialogTitle">
     <header class="family-dialog-header"><h2 id="savingsGoalDialogTitle">Đặt mục tiêu tiết kiệm</h2><button id="closeSavingsGoal" type="button" class="btn btn-subtle button ghost">Đóng</button></header>
     <div class="family-dialog-content">
@@ -298,11 +302,11 @@
   <button id="familyChatLauncher" class="chat-launcher" type="button" aria-label="Ch&#7885;n s&#7893; gia &#273;&#236;nh &#273;&#7875; chat" aria-haspopup="dialog" aria-controls="familyChat" aria-expanded="false" disabled><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-3 2V11.5A8.5 8.5 0 0 1 9.5 3h3a8.5 8.5 0 0 1 8.5 8.5Z"/><path d="M6 11h2m3 0h2m3 0h2"/></svg></button>
   <div id="toast" class="app-toast hidden"></div>
   <script src="/static/field-errors.js?v=2"></script>
-  <script src="/static/family-dialog.js?v=7"></script>
+  <script src="/static/family-dialog.js?v=8"></script>
   <script src="/static/money-input.js?v=1"></script>
   <script src="/static/avatar-crop.js"></script>
   <script src="/static/ledger-picker.js?v=1"></script>
-  <script src="/static/app.js?v=20261122-savings-calendar-1"></script>
+  <script src="/static/app.js?v=20261124-edit-dialog-1"></script>
   <script src="/static/family-chat.js?v=8"></script>
   <script defer src="/static/calendar.js?v=6"></script>
   <script src="/static/presence.js?v=1"></script>

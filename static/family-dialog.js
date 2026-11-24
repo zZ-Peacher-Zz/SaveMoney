@@ -5,14 +5,18 @@
     ["historyFilterDialog", "openHistoryFilters", "closeHistoryFilters"],
     ["insightDialog", "openInsight", "closeInsight"],
     ["passwordDialog", "openPasswordDialog", "closePasswordDialog"],
-    ["savingsGoalDialog", "openSavingsGoal", "closeSavingsGoal"]
+    ["savingsGoalDialog", "openSavingsGoal", "closeSavingsGoal"],
+    ["editExpenseDialog", null, "closeEditExpense"]
   ]) {
     const dialog = document.getElementById(dialogId);
     let scrollY = 0;
     const saved = {};
+    let opener;
     document.addEventListener("click", event => {
-      if (!event.target.closest(`#${openerId}`)) return;
+      const trigger = event.target.closest(openerId ? `#${openerId}` : "[data-action='edit']");
+      if (!trigger) return;
       if (dialog.open) return;
+      opener = trigger;
       scrollY = window.scrollY;
       for (const key of ["position", "top", "width", "overflow"]) saved[key] = document.body.style[key];
       document.body.style.position = "fixed";
@@ -38,7 +42,7 @@
     dialog.addEventListener("close", () => {
       for (const key of Object.keys(saved)) document.body.style[key] = saved[key];
       window.scrollTo(0, scrollY);
-      document.getElementById(openerId)?.focus({preventScroll: true});
+      if (opener?.isConnected) opener.focus({preventScroll: true});
     });
   }
 })();
