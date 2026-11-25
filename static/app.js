@@ -260,7 +260,7 @@ async function loadAll({background = false} = {}) {
       dashboardSnapshot = snapshot;
     }
     // Background updates must not replace a contribution the user is typing.
-    if (!background) MoneyInput.set(incomeInput, summary.my_income || "");
+    if (!background && !document.getElementById("incomeDialog").open) MoneyInput.set(incomeInput, summary.my_income || "");
     document.getElementById("exportBtn").href = ledgerUrl(`/api/months/${month}/export.csv`);
     setDashboardLoading(false);
   } catch (error) {
@@ -535,8 +535,49 @@ async function deleteExpense(id) {
   }
 }
 
+let incomeRequestVersion = 0;
+let incomeReady = false;
+document.addEventListener("click", async event => {
+  if (!event.target.closest("#openIncomeDialog")) return;
+  const request = ++incomeRequestVersion;
+  const version = accountVersion;
+  const month = monthPicker.value;
+  const ledger = ledgerPicker.value;
+  incomeReady = false;
+  incomeInput.disabled = true;
+  const button = document.getElementById("saveIncomeBtn");
+  button.disabled = true;
+  MoneyInput.set(incomeInput, "");
+  FieldErrors.clear(incomeInput);
+  const status = document.getElementById("incomeLoadStatus");
+  status.textContent = "Đang tải thu nhập đã lưu...";
+  document.getElementById("incomePeriod").textContent = `Tháng ${month.split("-").reverse().join("/")} · ${selectedGroup()?.name || "Cá nhân"}`;
+  try {
+    const summary = await api(`/api/months/${month}/summary`, {cache: "no-store"});
+    if (request !== incomeRequestVersion || version !== accountVersion || month !== monthPicker.value || ledger !== ledgerPicker.value) return;
+    MoneyInput.set(incomeInput, summary.my_income);
+    document.getElementById("incomeTitle").textContent = summary.my_income > 0 ? "Chỉnh sửa thu nhập của bạn" : "Thêm thu nhập của bạn";
+    status.textContent = "Nhập tổng thu nhập của bạn trong tháng. Khi lưu, số tiền mới sẽ thay thế số đã nhập trước đó.";
+    incomeReady = true;
+  } catch (error) {
+    if (request === incomeRequestVersion) FieldErrors.report(error, {}, incomeInput);
+    status.textContent = "Không tải được thu nhập. Đóng và mở lại để thử lại.";
+  } finally {
+    if (request === incomeRequestVersion) {
+      incomeInput.disabled = false;
+      button.disabled = !incomeReady;
+    }
+  }
+});
+document.getElementById("incomeDialog").addEventListener("close", () => {
+  incomeRequestVersion++;
+  incomeReady = false;
+  incomeInput.disabled = false;
+});
+
 document.getElementById("incomeForm").addEventListener("submit", async event => {
   event.preventDefault();
+  if (!incomeReady) return;
   if (!FieldErrors.validate(incomeInput)) return;
   const button = document.getElementById("saveIncomeBtn");
   button.disabled = true;

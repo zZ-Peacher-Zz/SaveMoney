@@ -238,6 +238,8 @@
   <dialog id="incomeDialog" class="family-dialog finance-dialog" aria-labelledby="incomeTitle">
     <header class="family-dialog-header"><h2 id="incomeTitle">Thu nhập tháng</h2><button id="closeIncomeDialog" type="button" class="btn btn-subtle button ghost">Đóng</button></header>
     <div class="family-dialog-content">
+      <p id="incomePeriod"></p>
+      <p id="incomeLoadStatus" role="status"></p>
       <p id="incomeHint" class="hidden">Nhập tổng phần thu nhập bạn góp vào gia đình trong tháng. Số tiền này thay thế mức đóng góp đã lưu của bạn, không cộng thêm.</p>
       <form id="incomeForm">
         <label for="incomeInput"><span>Thu nhập của bạn trong tháng (₫)</span><input class="form-control" id="incomeInput" type="text" inputmode="numeric" data-money-input data-min-amount="0" required placeholder="Ví dụ 20.000.000"></label>
@@ -306,7 +308,7 @@
   <script src="/static/money-input.js?v=1"></script>
   <script src="/static/avatar-crop.js"></script>
   <script src="/static/ledger-picker.js?v=1"></script>
-  <script src="/static/app.js?v=20261124-edit-dialog-1"></script>
+  <script src="/static/app.js?v=20261125-income-edit-1"></script>
   <script src="/static/family-chat.js?v=8"></script>
   <script defer src="/static/calendar.js?v=6"></script>
   <script src="/static/presence.js?v=1"></script>
