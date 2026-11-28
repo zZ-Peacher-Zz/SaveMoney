@@ -1,0 +1,21 @@
+<div class="tet-scene" aria-hidden="true">
+  <div class="tet-sun"></div>
+  <div class="tet-cloud tet-cloud-one"></div><div class="tet-cloud tet-cloud-two"></div>
+  <div class="tet-swallows">
+    {% for i in range(7) %}
+    <div class="tet-swallow" style="--flight-delay: -{{ 4 + i * 0.65 }}s; --flight-y: {{ 10 + (i % 3) * 5 }}vh; --bird-size: {{ 22 + i % 3 * 5 }}px; --wing-delay: -{{ i * 0.13 }}s;">
+      <svg viewBox="0 0 80 48" focusable="false"><path class="tet-swallow-wings" d="M39 27Q15 22 2 2Q7 25 32 31M41 27Q60 7 78 5Q64 25 46 31"/><path d="M34 27Q42 21 48 27L54 29 48 31Q43 36 36 32L18 45 25 31 13 33Z"/></svg>
+    </div>
+    {% endfor %}
+  </div>
+  <img class="tet-tree tet-tree-mai" src="/static/tet-blossoms.svg" alt="">
+  <img class="tet-tree tet-tree-dao" src="/static/tet-blossoms.svg" alt="">
+  <div class="tet-lantern tet-lantern-left"><span>Phúc</span></div>
+  <div class="tet-lantern tet-lantern-right"><span>Lộc</span></div>
+  {% for i in range(16) %}
+  <span class="tet-petal" style="--x: {{ (i * 37 + 5) % 100 }}%; --delay: -{{ i * 2.3 }}s; --duration: {{ 14 + i % 9 }}s; --drift: {{ (i % 5 - 2) * 24 }}px;"></span>
+  {% endfor %}
+  <div class="tet-envelope tet-envelope-one"><span>福</span></div>
+  <div class="tet-envelope tet-envelope-two"><span>福</span></div>
+  <div class="tet-hills"></div>
+</div>
