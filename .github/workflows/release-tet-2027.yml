@@ -1,0 +1,115 @@
+name: Release Tet theme on 2027-01-01
+
+on:
+  schedule:
+    # 00:00 Vietnam = 17:00 UTC on the preceding day; retry if delayed.
+    - cron: '0,15,30,45 17-18 31 12 *'
+    - cron: '17 * 1-3 1 *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Validate without merging (safe before the release date)
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: tet-release-2027
+  cancel-in-progress: false
+
+env:
+  RELEASE_AT: '2026-12-31T17:00:00Z'
+  EXPIRES_AT: '2027-01-04T00:00:00Z'
+  APPROVED_HEAD: '39a9c37849f9bdff1ea3a4e44bdb6a22d73223a1'
+  RELEASE_PR: '1'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      ready: ${{ steps.gate.outputs.ready }}
+      base: ${{ steps.gate.outputs.base }}
+    steps:
+      - name: Check date and exact approved PR
+        id: gate
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const dryRun = context.eventName === 'workflow_dispatch' && context.payload.inputs?.dry_run !== 'false';
+            const now = Date.now();
+            if (!dryRun && (now < Date.parse(process.env.RELEASE_AT) || now >= Date.parse(process.env.EXPIRES_AT))) {
+              core.info('Outside the one-time 2027 release window; nothing to merge.');
+              return;
+            }
+            const {data: pr} = await github.rest.pulls.get({...context.repo, pull_number: Number(process.env.RELEASE_PR)});
+            if (pr.merged) { core.info('Already merged; nothing to do.'); return; }
+            if (pr.state !== 'open' || pr.draft || pr.base.ref !== 'main' ||
+                pr.head.ref !== 'feature/tet-theme' || pr.head.repo.full_name !== pr.base.repo.full_name ||
+                pr.head.sha !== process.env.APPROVED_HEAD) {
+              throw new Error('PR no longer matches the approved release. Review before rescheduling.');
+            }
+            core.setOutput('base', pr.base.sha);
+            core.setOutput('ready', 'true');
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.ready == 'true'
+        with:
+          ref: ${{ steps.gate.outputs.base }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Prepare merged tree without pushing
+        if: steps.gate.outputs.ready == 'true'
+        run: |
+          git config user.name 'Tet release validation'
+          git config user.email 'tet-validation@users.noreply.github.com'
+          git merge --no-commit --no-ff "$APPROVED_HEAD"
+      - uses: actions/setup-python@v5
+        if: steps.gate.outputs.ready == 'true'
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        if: steps.gate.outputs.ready == 'true'
+        run: python -m pip install -r requirements.txt httpx
+      - name: Compile and run isolated tests
+        if: steps.gate.outputs.ready == 'true'
+        env:
+          DATABASE_URL: sqlite://
+        run: |
+          python -m compileall -q app main.py
+          python -m unittest discover -s tests
+
+  merge:
+    needs: validate
+    if: needs.validate.outputs.ready == 'true' && (github.event_name != 'workflow_dispatch' || inputs.dry_run == false)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Merge only at or after the approved release time
+        uses: actions/github-script@v7
+        env:
+          TESTED_BASE: ${{ needs.validate.outputs.base }}
+        with:
+          script: |
+            const now = Date.now();
+            if (now < Date.parse(process.env.RELEASE_AT) || now >= Date.parse(process.env.EXPIRES_AT)) {
+              throw new Error('Outside the one-time release window.');
+            }
+            const {data: pr} = await github.rest.pulls.get({...context.repo, pull_number: Number(process.env.RELEASE_PR)});
+            if (pr.merged) return;
+            const {data: base} = await github.rest.repos.getBranch({...context.repo, branch: 'main'});
+            if (pr.state !== 'open' || pr.draft || pr.base.ref !== 'main' ||
+                pr.head.ref !== 'feature/tet-theme' || pr.head.repo.full_name !== pr.base.repo.full_name ||
+                pr.head.sha !== process.env.APPROVED_HEAD || base.commit.sha !== process.env.TESTED_BASE) {
+              throw new Error('Release inputs changed after validation; retry with the latest main.');
+            }
+            const result = await github.rest.pulls.merge({...context.repo,
+              pull_number: Number(process.env.RELEASE_PR), sha: process.env.APPROVED_HEAD,
+              merge_method: 'merge', commit_title: 'Release Tet theme for 2027'});
+            if (!result.data.merged) throw new Error(result.data.message);
+            core.info(`Merged release: ${result.data.sha}`);
