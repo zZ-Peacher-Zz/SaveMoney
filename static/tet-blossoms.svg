@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 700" fill="none">
+ <defs>
+  <g id="flower"><g fill="#ffd35c"><ellipse cy="-9" rx="7" ry="10"/><ellipse cy="-9" rx="7" ry="10" transform="rotate(72)"/><ellipse cy="-9" rx="7" ry="10" transform="rotate(144)"/><ellipse cy="-9" rx="7" ry="10" transform="rotate(216)"/><ellipse cy="-9" rx="7" ry="10" transform="rotate(288)"/></g><circle r="4" fill="#b85024"/><circle r="2" fill="#fff4b8"/></g>
+  <g id="cluster"><use href="#flower"/><use href="#flower" transform="translate(30 -20) scale(.7)"/><use href="#flower" transform="translate(-24 -28) scale(.8)"/><use href="#flower" transform="translate(17 28) scale(.6)"/><path d="M-9 15Q-37 35-35 12Q-20 0-9 15" fill="#79944c"/></g>
+ </defs>
+ <path d="M139 700Q202 561 175 441T185 221M181 442Q97 355 53 235M177 357Q265 283 277 130M180 288Q127 210 126 98M182 227Q221 180 216 49M175 472Q268 423 341 282M273 373Q361 385 403 337" stroke="#75482e" stroke-width="13" stroke-linecap="round"/>
+ <path d="M58 246 27 170M100 335 151 275M277 159 329 106M332 298 316 233M190 213 167 148M219 101 264 69" stroke="#75482e" stroke-width="6" stroke-linecap="round"/>
+ <g><use href="#cluster" x="27" y="167"/><use href="#cluster" x="53" y="242"/><use href="#cluster" x="99" y="319"/><use href="#cluster" x="145" y="269"/><use href="#cluster" x="125" y="101"/><use href="#cluster" x="142" y="181"/><use href="#cluster" x="182" y="228"/><use href="#cluster" x="216" y="53"/><use href="#cluster" x="264" y="73"/><use href="#cluster" x="277" y="135"/><use href="#cluster" x="328" y="110"/><use href="#cluster" x="257" y="248"/><use href="#cluster" x="316" y="232"/><use href="#cluster" x="341" y="283"/><use href="#cluster" x="311" y="356"/><use href="#cluster" x="398" y="337"/><use href="#cluster" x="202" y="398"/></g>
+ <path d="M104 645h147l-20 55H124Z" fill="#b83e35"/><path d="M106 646h143M116 663h124" stroke="#f2c465" stroke-width="7"/><path d="m170 668 15 14-15 14-15-14Z" fill="#f2c465"/>
+</svg>
